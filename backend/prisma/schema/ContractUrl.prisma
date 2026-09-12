@@ -1,10 +1,10 @@
-/// A URL recorded against a project (e.g. its Pipedrive deal), classified by `UrlType`.
-model ProjectUrl {
+/// A URL recorded against a contract (e.g. its Pipedrive deal), classified by `UrlType`.
+model ContractUrl {
   /// @DtoCreateOptional
   /// @DtoUpdateOptional
   id          Int     @id @default(autoincrement())
   /// @DtoRelationIncludeId
-  projectId   Int
+  contractId  Int
   /// @DtoRelationIncludeId
   urlTypeId   Int
   /// @DtoCreateOptional
@@ -15,11 +15,11 @@ model ProjectUrl {
   url         String  @db.VarChar(500)
 
   /// @DtoReadOnly
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   /// @DtoReadOnly
-  urlType UrlType @relation(fields: [urlTypeId], references: [id], onUpdate: Cascade)
+  urlType  UrlType  @relation(fields: [urlTypeId], references: [id], onUpdate: Cascade)
 
-  @@index([projectId])
+  @@index([contractId])
   @@index([urlTypeId])
-  @@map("project_urls")
+  @@map("contract_urls")
 }

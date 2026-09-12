@@ -1,4 +1,4 @@
-/// Lookup table for labelled tags that can be attached to projects and systems, shown in
+/// Lookup table for labelled tags that can be attached to contracts and systems, shown in
 /// grids as a coloured, rounded chip.
 model Tag {
   /// @DtoCreateOptional
@@ -15,8 +15,8 @@ model Tag {
   /// @maxLength 7
   textColor       String @db.VarChar(7)
 
-  projects ProjectTagAssignment[]
-  systems  SystemTagAssignment[]
+  contracts ContractTagAssignment[]
+  systems   SystemTagAssignment[]
 
   @@map("tags")
 }

@@ -1,4 +1,4 @@
-/// Lookup table classifying a URL recorded against a project or system, e.g. "Pipedrive".
+/// Lookup table classifying a URL recorded against a contract or system, e.g. "Pipedrive".
 model UrlType {
   /// @DtoCreateOptional
   /// @DtoUpdateOptional
@@ -6,8 +6,8 @@ model UrlType {
   /// @maxLength 100
   name String @unique @db.VarChar(100)
 
-  projectUrls ProjectUrl[]
-  systemUrls  SystemUrl[]
+  contractUrls ContractUrl[]
+  systemUrls   SystemUrl[]
 
   @@map("url_types")
 }

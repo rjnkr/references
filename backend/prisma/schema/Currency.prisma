@@ -14,7 +14,7 @@ model Currency {
   /// @maxLength 8
   symbol String? @db.VarChar(8)
 
-  projects Project[]
+  contracts Contract[]
 
   @@map("currencies")
 }

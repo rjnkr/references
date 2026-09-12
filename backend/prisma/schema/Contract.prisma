@@ -1,40 +1,40 @@
-/// A commercial project/deal, usable as a Tidalis reference. Its system-side facts
+/// A commercial contract/deal, usable as a Tidalis reference. Its system-side facts
 /// (scope, products, location, ports, modules, ...) live on the linked System - see
 /// `systemId` below.
-model Project {
+model Contract {
   /// @DtoCreateOptional
   /// @DtoUpdateOptional
   id                      Int       @id @default(autoincrement())
-  /// Internal Tidalis project number
+  /// Internal Tidalis contract number
   /// @DtoCreateOptional
   /// @DtoUpdateOptional
   /// @maxLength 50
-  projectNumber           String?   @unique @db.VarChar(50)
+  contractNumber          String?   @unique @db.VarChar(50)
   /// @DtoCreateOptional
   /// @DtoUpdateOptional
   /// @maxLength 100
   name                    String?   @db.VarChar(100)
-  /// Date the project was awarded (date only, no time component)
+  /// Date the contract was awarded (date only, no time component)
   awardDate               DateTime  @db.Date
-  /// Date the project ended, or is expected to end (date only). Optional - many
-  /// projects are still ongoing.
+  /// Date the contract ended, or is expected to end (date only). Optional - many
+  /// contracts are still ongoing.
   /// @DtoCreateOptional
   /// @DtoUpdateOptional
   endDate                 DateTime? @db.Date
-  /// Multi-select: which phase(s) this project covers - a JSON array of `ProjectTag`
-  /// values (e.g. `["IMPLEMENTATION", "SM"]` for a project that is both). Not to be
-  /// confused with `System.projectType` (the delivered system's technical category).
+  /// Multi-select: which phase(s) this contract covers - a JSON array of `ContractTag`
+  /// values (e.g. `["IMPLEMENTATION", "SM"]` for a contract that is both). Not to be
+  /// confused with `System.contractType` (the delivered system's technical category).
   /// @DtoCreateOptional
   /// @DtoUpdateOptional
-  projectType             Json      @default("[]")
+  contractType            Json      @default("[]")
   /// Commercial / implementation price in whole currency units
   implementationPrice     Int
   /// Yearly maintenance price in whole currency units
   maintenancePricePerYear Int
   /// @DtoRelationIncludeId
   currencyId              Int
-  /// The System this project relates to. Not every project links to a System (and several
-  /// projects - e.g. an implementation plus later maintenance renewals - can link to the
+  /// The System this contract relates to. Not every contract links to a System (and several
+  /// contracts - e.g. an implementation plus later maintenance renewals - can link to the
   /// same one).
   /// @DtoCreateOptional
   /// @DtoUpdateOptional
@@ -43,7 +43,7 @@ model Project {
   /// @DtoCreateOptional
   /// @DtoUpdateOptional
   newDevelopments         String?   @db.Text
-  /// What was special about the implementation of this project
+  /// What was special about the implementation of this contract
   /// @DtoCreateOptional
   /// @DtoUpdateOptional
   implementationDetails   String?   @db.Text
@@ -57,7 +57,7 @@ model Project {
   /// @DtoCreateOptional
   /// @DtoUpdateOptional
   internalNotes           String?   @db.Text
-  /// Soft-delete flag. A "deleted" project is hidden from every normal read (list,
+  /// Soft-delete flag. A "deleted" contract is hidden from every normal read (list,
   /// detail, MCP tools) exactly as if it had been hard-deleted, but the row and all
   /// of its child data are kept so it can be restored from its audit trail entry.
   /// @DtoReadOnly
@@ -72,13 +72,13 @@ model Project {
   /// @DtoReadOnly
   system   System?  @relation(fields: [systemId], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
-  completionDates ProjectCompletionDate[]
-  documents       ProjectDocument[]
-  tags            ProjectTagAssignment[]
-  urls            ProjectUrl[]
+  completionDates ContractCompletionDate[]
+  documents       ContractDocument[]
+  tags            ContractTagAssignment[]
+  urls            ContractUrl[]
 
   @@index([currencyId])
   @@index([systemId])
   @@index([deleted])
-  @@map("projects")
+  @@map("contracts")
 }

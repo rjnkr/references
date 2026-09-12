@@ -1,6 +1,6 @@
 /// A delivered Tidalis system, usable as a commercial reference. Zero, one or many
-/// Projects (the commercial deal) can point at the same System - e.g. an implementation
-/// project plus later maintenance-renewal projects.
+/// Contracts (the commercial deal) can point at the same System - e.g. an implementation
+/// contract plus later maintenance-renewal contracts.
 model System {
   /// @DtoCreateOptional
   /// @DtoUpdateOptional
@@ -9,7 +9,7 @@ model System {
   name                 String      @db.VarChar(100)
   /// Free text scope of the system. Limited to 200 words at the API layer.
   scope                String      @db.Text
-  projectType          ProjectType
+  contractType         ContractType
   /// Free text list of Tidalis products used
   /// @maxLength 100
   products             String      @db.VarChar(100)
@@ -72,7 +72,7 @@ model System {
   /// @DtoReadOnly
   systemUnlocode UnLocode @relation(fields: [systemUnlocodeId], references: [id], onUpdate: Cascade)
 
-  projects           Project[]
+  contracts          Contract[]
   ports              SystemPort[]
   modules            SystemModule[]
   subSystems         SystemSubSystem[]
@@ -84,7 +84,7 @@ model System {
 
   @@index([countryId])
   @@index([systemUnlocodeId])
-  @@index([projectType])
+  @@index([contractType])
   @@index([canBeUsedAsReference])
   @@index([deleted])
   @@map("systems")
