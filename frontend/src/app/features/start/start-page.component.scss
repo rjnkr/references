@@ -1,0 +1,161 @@
+:host {
+  display: block;
+}
+
+.start {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 34px;
+  /* Fill the shell's content area (minus its own padding) so the tiles sit optically
+     centred rather than clinging to the navbar. */
+  min-height: calc(100vh - var(--tidalis-navbar-height) - var(--tidalis-footer-height) - 48px);
+  padding: 24px 0;
+}
+
+/* ----------------------------------------------------------------------------- intro */
+
+.start__intro {
+  text-align: center;
+}
+
+.start__title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--tidalis-blue-dark);
+}
+
+.start__subtitle {
+  margin: 6px 0 0;
+  font-size: 0.95rem;
+  color: var(--tidalis-muted);
+}
+
+/* ----------------------------------------------------------------------------- tiles */
+
+.start__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  width: 100%;
+  max-width: 940px;
+}
+
+.start__tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 28px 26px 24px;
+  cursor: pointer;
+  text-align: left;
+  /* mat-card brings its own surface; the Tidalis card look wins. */
+  background: var(--tidalis-card-bg);
+  border-radius: var(--tidalis-radius);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    border-color 140ms ease;
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-3px);
+    border-color: var(--tidalis-blue);
+    box-shadow: var(--tidalis-shadow-lg);
+    outline: none;
+  }
+
+  &:focus-visible {
+    box-shadow:
+      var(--tidalis-shadow-lg),
+      0 0 0 3px rgba(15, 67, 97, 0.25);
+  }
+
+  &:active {
+    transform: translateY(-1px);
+  }
+}
+
+.start__tile-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  background: var(--tidalis-blue-light);
+  color: var(--tidalis-blue);
+
+  mat-icon {
+    font-size: 30px;
+    width: 30px;
+    height: 30px;
+  }
+}
+
+.start__tile-title {
+  margin: 6px 0 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--tidalis-text);
+}
+
+.start__tile-text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--tidalis-muted);
+}
+
+.start__tile-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--tidalis-blue);
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+    transition: transform 140ms ease;
+  }
+}
+
+.start__tile:hover .start__tile-cta mat-icon {
+  transform: translateX(3px);
+}
+
+/* Second tile gets the orange accent so it reads as distinct from its neighbors. */
+.start__tile:nth-child(2) {
+  .start__tile-icon {
+    background: #fdeadb;
+    color: var(--tidalis-orange-dark);
+  }
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--tidalis-orange);
+  }
+
+  .start__tile-cta {
+    color: var(--tidalis-orange-dark);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .start__tiles {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .start__title {
+    font-size: 1.4rem;
+  }
+}

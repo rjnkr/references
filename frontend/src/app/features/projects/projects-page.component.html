@@ -1,0 +1,150 @@
+<mat-sidenav-container class="projects-shell" [hasBackdrop]="true">
+  <!-- Slide-in detail panel (opens on row click / "New Project"). -->
+  <mat-sidenav
+    class="projects-panel"
+    position="end"
+    mode="over"
+    [autoFocus]="false"
+    [opened]="panel() !== null"
+    (openedChange)="onSidenavOpenedChange($event)"
+  >
+    @if (panel(); as state) {
+      <app-project-detail-panel
+        [state]="state"
+        (closed)="closePanel()"
+        (saved)="onPanelSaved($event)"
+        (deleteRequested)="confirmDelete($event)"
+        (documentsChanged)="load()"
+      />
+    }
+  </mat-sidenav>
+
+  <mat-sidenav-content class="projects-content">
+    <section class="tidalis-card projects-card">
+      <!-- ------------------------------------------------------------------ toolbar -->
+      <div class="tidalis-card-header">
+        <div class="projects-heading">
+          <h1>Project References</h1>
+          <div class="tidalis-card-subtitle">
+            @if (loading()) {
+              Loading…
+            } @else if (hasColumnFilters()) {
+              {{ displayedRowCount() }} of {{ rows().length }} shown on this page ·
+              {{ total() }} matching in total
+            } @else {
+              {{ total() }} {{ total() === 1 ? 'project' : 'projects' }}
+            }
+          </div>
+        </div>
+
+        <div class="projects-toolbar">
+          <button
+            mat-stroked-button
+            type="button"
+            [matMenuTriggerFor]="columnsMenu"
+            matTooltip="Show or hide columns"
+          >
+            <mat-icon>view_column</mat-icon>
+            <span class="d-none d-md-inline">Columns</span>
+          </button>
+
+          <button
+            mat-stroked-button
+            type="button"
+            [disabled]="!hasColumnFilters()"
+            (click)="clearFilters()"
+            matTooltip="Clear column filters"
+          >
+            <mat-icon>filter_alt_off</mat-icon>
+            <span class="d-none d-lg-inline">Clear filters</span>
+          </button>
+
+          <button
+            mat-icon-button
+            type="button"
+            (click)="load()"
+            matTooltip="Reload"
+            aria-label="Reload"
+          >
+            <mat-icon>refresh</mat-icon>
+          </button>
+
+          <button mat-flat-button color="primary" type="button" (click)="newProject()">
+            <mat-icon>add</mat-icon>
+            <span>New Project</span>
+          </button>
+        </div>
+      </div>
+
+      <mat-menu #columnsMenu="matMenu" class="columns-menu">
+        <div class="columns-menu__header" (click)="$event.stopPropagation()">
+          <span>Visible columns</span>
+          <button mat-button type="button" (click)="resetColumns()">Reset</button>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="columns-menu__list" (click)="$event.stopPropagation()">
+          @for (column of toggleableColumns; track column.colId) {
+            <mat-checkbox
+              [checked]="isColumnVisible(column.colId)"
+              (change)="toggleColumn(column.colId, $event.checked)"
+            >
+              {{ column.label }}
+            </mat-checkbox>
+          }
+        </div>
+      </mat-menu>
+
+      @if (loading()) {
+        <mat-progress-bar mode="indeterminate" class="projects-progress"></mat-progress-bar>
+      }
+
+      @if (loadError()) {
+        <div class="projects-error">
+          <mat-icon>cloud_off</mat-icon>
+          <span>{{ loadError() }}</span>
+          <button mat-button type="button" (click)="load()">Retry</button>
+        </div>
+      }
+
+      <!-- --------------------------------------------------------------------- grid -->
+      <div class="tidalis-card-body tidalis-card-body--flush projects-body">
+        <div class="projects-grid">
+          @if (!loading() && rows().length === 0) {
+            <div class="projects-empty">
+              No project references recorded yet — use “New Project” to add the first one.
+            </div>
+          } @else {
+            <ag-grid-angular
+              class="projects-ag-grid"
+              [theme]="gridTheme"
+              [columnDefs]="columnDefs"
+              [defaultColDef]="defaultColDef"
+              [rowData]="rows()"
+              [context]="gridContext"
+              [getRowId]="getRowId"
+              [getRowClass]="getRowClass"
+              [suppressCellFocus]="true"
+              [animateRows]="false"
+              (gridReady)="onGridReady($event)"
+              (sortChanged)="onGridSortChanged($event)"
+              (modelUpdated)="onGridModelUpdated($event)"
+              (filterChanged)="onGridFilterChanged($event)"
+              (rowClicked)="onRowClicked($event)"
+              (columnMoved)="onGridColumnMoved($event)"
+              (columnResized)="onGridColumnResized($event)"
+            ></ag-grid-angular>
+          }
+        </div>
+
+        <mat-paginator
+          [length]="total()"
+          [pageIndex]="pageIndex()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          showFirstLastButtons
+          (page)="onPage($event)"
+        ></mat-paginator>
+      </div>
+    </section>
+  </mat-sidenav-content>
+</mat-sidenav-container>

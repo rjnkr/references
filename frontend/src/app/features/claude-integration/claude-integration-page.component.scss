@@ -1,0 +1,258 @@
+:host {
+  display: block;
+}
+
+.claude-card {
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.claude-progress {
+  --mdc-linear-progress-active-indicator-color: var(--tidalis-orange);
+  height: 3px;
+}
+
+.claude-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  background: #fbe4e2;
+  border-radius: var(--tidalis-radius);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #a3221b;
+
+  mat-icon {
+    flex: 0 0 auto;
+    margin-top: 1px;
+  }
+}
+
+.claude-heading__icon {
+  vertical-align: -6px;
+  margin-right: 4px;
+  color: var(--tidalis-blue);
+}
+
+.claude-body {
+  padding: 20px 24px 28px;
+}
+
+.claude-lead {
+  margin: 0 0 20px;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--tidalis-text);
+}
+
+.claude-section-title {
+  margin: 28px 0 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--tidalis-blue-dark);
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+}
+
+.claude-list {
+  margin: 0 0 8px;
+  padding-left: 20px;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--tidalis-text);
+
+  li {
+    margin-bottom: 4px;
+  }
+}
+
+.claude-list--tight {
+  margin: 6px 0 0;
+}
+
+code,
+.claude-inline-code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.8125rem;
+  background: var(--tidalis-header-bg);
+  border: 1px solid var(--tidalis-border);
+  border-radius: 5px;
+  padding: 1px 6px;
+}
+
+.claude-field-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.claude-field-label {
+  min-width: 90px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--tidalis-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.claude-hint {
+  margin: 6px 0 0;
+  font-size: 0.8125rem;
+  color: var(--tidalis-muted);
+}
+
+/* ------------------------------------------------------------------------ code blocks */
+
+.claude-code-block {
+  position: relative;
+  margin: 8px 0 16px;
+  background: #1c2733;
+  border-radius: var(--tidalis-radius);
+  overflow: hidden;
+
+  pre {
+    margin: 0;
+    padding: 14px 44px 14px 16px;
+    color: #e8edf3;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  &__copy {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    color: #cdd6e0;
+
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
+/* -------------------------------------------------------------------- client locations */
+
+.claude-locations {
+  margin: 4px 0 16px;
+}
+
+.claude-location {
+  height: 100%;
+  padding: 14px 16px;
+  background: var(--tidalis-header-bg);
+  border: 1px solid var(--tidalis-border);
+  border-radius: var(--tidalis-radius);
+  font-size: 0.8125rem;
+  color: var(--tidalis-text);
+
+  p {
+    margin: 0 0 4px;
+  }
+}
+
+.claude-location__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  color: var(--tidalis-blue-dark);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* ------------------------------------------------------------------------------ table */
+
+.claude-table-wrap {
+  border: 1px solid var(--tidalis-border);
+  border-radius: var(--tidalis-radius);
+  margin-bottom: 8px;
+}
+
+.claude-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+
+  th {
+    padding: 8px 12px;
+    background: var(--tidalis-header-bg);
+    border-bottom: 1px solid var(--tidalis-border);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--tidalis-blue-dark);
+    text-align: left;
+  }
+
+  td {
+    padding: 7px 12px;
+    border-bottom: 1px solid #edf0f4;
+    vertical-align: top;
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------- security */
+
+.claude-security {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 14px 16px;
+  background: #fdeadb;
+  border-radius: var(--tidalis-radius);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #8a4a12;
+
+  mat-icon {
+    flex: 0 0 auto;
+    margin-top: 1px;
+  }
+
+  code {
+    background: rgba(255, 255, 255, 0.55);
+    border-color: transparent;
+  }
+}
+
+/* -------------------------------------------------------------------------------- back */
+
+.claude-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 24px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--tidalis-muted);
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    color: var(--tidalis-blue);
+    text-decoration: none;
+  }
+}

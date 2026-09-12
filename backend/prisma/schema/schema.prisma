@@ -1,0 +1,30 @@
+// Datasource + generator blocks. Every model lives in its own file in this
+// directory (Prisma multi-file schema, wired up via ../../prisma.config.ts).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator nestjsDto {
+  provider                      = "prisma-generator-nestjs-dto"
+  output                        = "../../src/generated/nestjs-dto"
+  classValidation               = "true"
+  createDtoPrefix               = "Create"
+  dtoSuffix                     = "Dto"
+  entityPrefix                  = ""
+  entitySuffix                  = ""
+  fileNamingStyle               = "camel"
+  outputType                    = "class"
+  updateDtoPrefix               = "Update"
+  definiteAssignmentAssertion   = "false"
+  exportRelationModifierClasses = "true"
+  outputApiPropertyType         = "true"
+  requiredResponseApiProperty   = "true"
+  prettier                      = "false"
+}
+
+// MariaDB speaks the MySQL wire protocol, so the mysql provider is used.
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}

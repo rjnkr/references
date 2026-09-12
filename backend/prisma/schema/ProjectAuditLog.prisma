@@ -1,0 +1,48 @@
+/// Immutable audit trail of every create, update and delete on a project reference.
+/// Rows are written directly by ProjectsService inside the same transaction as the
+/// change itself - never through the Create/Update DTOs below, which every model gets
+/// but this one never uses: the API only ever reads this table.
+model ProjectAuditLog {
+  /// @DtoReadOnly
+  id            Int         @id @default(autoincrement())
+  /// Id of the affected project. Deliberately NOT a foreign key relation: this row must
+  /// survive the project itself being deleted, since the DELETE entry is the only
+  /// remaining trace of it.
+  /// @DtoReadOnly
+  projectId     Int
+  /// Denormalised so the list can display/filter by project without joining a row that
+  /// may no longer exist.
+  /// @DtoReadOnly
+  /// @maxLength 50
+  projectNumber String?     @db.VarChar(50)
+  /// @DtoReadOnly
+  /// @maxLength 100
+  projectName   String      @db.VarChar(100)
+  /// @DtoReadOnly
+  action        AuditAction
+  /// Full project state (the same shape the API returns) before the change. Null for CREATE.
+  /// @DtoReadOnly
+  beforeData    Json?
+  /// Full project state after the change. Null for DELETE.
+  /// @DtoReadOnly
+  afterData     Json?
+  /// Names of the top-level fields that actually changed. Only set for UPDATE.
+  /// @DtoReadOnly
+  changedFields Json?
+  /// Id of the user who made the change, when known.
+  /// @DtoReadOnly
+  userId        Int?
+  /// @DtoReadOnly
+  /// @maxLength 255
+  userEmail     String      @db.VarChar(255)
+  /// @DtoReadOnly
+  /// @maxLength 150
+  userName      String?     @db.VarChar(150)
+  /// @DtoReadOnly
+  createdAt     DateTime    @default(now())
+
+  @@index([projectId])
+  @@index([createdAt])
+  @@index([action])
+  @@map("project_audit_logs")
+}

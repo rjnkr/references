@@ -1,0 +1,120 @@
+@if (config(); as cfg) {
+  <section class="tidalis-card ref-card">
+    <div class="tidalis-card-header">
+      <div class="ref-heading">
+        <a class="ref-back" routerLink="/reference-data">
+          <mat-icon>arrow_back</mat-icon>
+          <span>Reference Data</span>
+        </a>
+        <h1>
+          <mat-icon class="ref-heading__icon">{{ cfg.icon }}</mat-icon>
+          {{ cfg.title }}
+        </h1>
+        <div class="tidalis-card-subtitle">{{ cfg.description }}</div>
+      </div>
+
+      <div class="ref-toolbar">
+        @if (cfg.searchMinLength) {
+          <mat-form-field appearance="outline" class="ref-search">
+            <mat-label>Search</mat-label>
+            <input
+              matInput
+              [formControl]="searchControl"
+              [placeholder]="'Type at least ' + cfg.searchMinLength + ' characters…'"
+            />
+            <mat-icon matPrefix>search</mat-icon>
+          </mat-form-field>
+        } @else {
+          <button
+            mat-icon-button
+            type="button"
+            (click)="load()"
+            matTooltip="Reload"
+            aria-label="Reload"
+          >
+            <mat-icon>refresh</mat-icon>
+          </button>
+        }
+
+        <button mat-flat-button color="primary" type="button" (click)="add()">
+          <mat-icon>add</mat-icon>
+          <span>Add {{ cfg.singular }}</span>
+        </button>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <mat-progress-bar mode="indeterminate" class="ref-progress"></mat-progress-bar>
+    }
+
+    @if (loadError()) {
+      <div class="ref-error">
+        <mat-icon>cloud_off</mat-icon>
+        <span>{{ loadError() }}</span>
+        <button mat-button type="button" (click)="load(searchControl.value)">Retry</button>
+      </div>
+    }
+
+    <div class="tidalis-card-body tidalis-card-body--flush ref-body tidalis-scroll-x">
+      @if (!loading() && needsLongerSearch()) {
+        <div class="tidalis-empty">
+          Type at least {{ cfg.searchMinLength }} characters to search.
+        </div>
+      } @else if (!loading() && rows().length === 0) {
+        <div class="tidalis-empty">{{ cfg.emptyMessage }}</div>
+      } @else {
+        <table class="ref-table">
+          <thead>
+            <tr>
+              @for (column of cfg.columns; track column.key) {
+                <th [class.text-end]="column.align === 'end'">{{ column.label }}</th>
+              }
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row['id']) {
+              <tr>
+                @for (column of cfg.columns; track column.key) {
+                  <td [class.text-end]="column.align === 'end'">
+                    @if (column.chip && column.chip(row); as chip) {
+                      <span
+                        class="tidalis-tag-chip"
+                        [style.background-color]="chip.backgroundColor"
+                        [style.color]="chip.textColor"
+                        >{{ chip.label }}</span
+                      >
+                    } @else {
+                      {{ column.render(row) }}
+                    }
+                  </td>
+                }
+                <td class="text-end ref-table__actions">
+                  <button
+                    mat-icon-button
+                    type="button"
+                    matTooltip="Edit"
+                    (click)="edit(row)"
+                    [attr.aria-label]="'Edit ' + cfg.rowLabel(row)"
+                  >
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    class="ref-table__delete"
+                    matTooltip="Delete"
+                    (click)="confirmDelete(row)"
+                    [attr.aria-label]="'Delete ' + cfg.rowLabel(row)"
+                  >
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  </section>
+}

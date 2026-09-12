@@ -1,0 +1,13 @@
+/// Lookup table for named software modules that can be delivered as part of a system,
+/// e.g. "Vessel Traffic Image", "Reporting".
+model Module {
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  id   Int    @id @default(autoincrement())
+  /// @maxLength 150
+  name String @unique @db.VarChar(150)
+
+  systems SystemModule[]
+
+  @@map("modules")
+}

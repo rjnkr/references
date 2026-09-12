@@ -1,0 +1,144 @@
+<div #shell class="map-shell" [class.map-shell--light]="!darkMode()">
+  <div
+    #mapTarget
+    class="map-target"
+    role="img"
+    aria-label="World map showing where Tidalis systems are located"
+  ></div>
+
+  <!-- Absolutely-positioned satellite markers for a fanned-out cluster — see the
+       component's "Hover / cluster fan-out" section for why this is DOM, not canvas. -->
+  <div #satellitesLayer class="map-satellites" aria-hidden="true"></div>
+
+  <!-- Cursor-following label. Content is written imperatively from the hover handlers
+       so that moving the mouse never runs change detection. -->
+  <div #tooltip class="map-tooltip" aria-hidden="true">
+    <span #tooltipTitle class="map-tooltip__title"></span>
+    <span #tooltipSub class="map-tooltip__sub"></span>
+  </div>
+
+  @if (!isFullscreen()) {
+    <div class="map-controls">
+      <button
+        type="button"
+        class="map-controls__btn"
+        (click)="zoomIn()"
+        matTooltip="Zoom in"
+        aria-label="Zoom in"
+      >
+        <mat-icon>add</mat-icon>
+      </button>
+      <button
+        type="button"
+        class="map-controls__btn"
+        (click)="zoomOut()"
+        matTooltip="Zoom out"
+        aria-label="Zoom out"
+      >
+        <mat-icon>remove</mat-icon>
+      </button>
+      <button
+        type="button"
+        class="map-controls__btn"
+        (click)="toggleLocations()"
+        [matTooltip]="showLocations() ? 'Show main locations only' : 'Show all locations'"
+        [attr.aria-label]="showLocations() ? 'Show main locations only' : 'Show all locations'"
+      >
+        <mat-icon>{{ showLocations() ? 'layers_clear' : 'layers' }}</mat-icon>
+      </button>
+      <button
+        type="button"
+        class="map-controls__btn"
+        (click)="enterFullscreen()"
+        matTooltip="Full screen"
+        aria-label="Enter full screen"
+      >
+        <mat-icon>fullscreen</mat-icon>
+      </button>
+      <button
+        type="button"
+        class="map-controls__btn"
+        (click)="toggleTheme()"
+        [matTooltip]="darkMode() ? 'Switch to light mode' : 'Switch to dark mode'"
+        [attr.aria-label]="darkMode() ? 'Switch to light mode' : 'Switch to dark mode'"
+      >
+        <mat-icon>{{ darkMode() ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+      <button
+        type="button"
+        class="map-controls__btn"
+        [matMenuTriggerFor]="themeMenu"
+        matTooltip="Map colour theme"
+        aria-label="Map colour theme settings"
+      >
+        <mat-icon>palette</mat-icon>
+      </button>
+    </div>
+  }
+
+  <mat-menu #themeMenu="matMenu">
+    <button type="button" mat-menu-item [matMenuTriggerFor]="lightThemeMenu">
+      <span>Light Color Theme</span>
+      <span class="theme-menu__value">{{ lightThemeLabel() }}</span>
+    </button>
+    <button type="button" mat-menu-item [matMenuTriggerFor]="darkThemeMenu">
+      <span>Dark Color Theme</span>
+      <span class="theme-menu__value">{{ darkThemeLabel() }}</span>
+    </button>
+  </mat-menu>
+
+  <mat-menu #lightThemeMenu="matMenu">
+    @for (theme of themes(); track theme.id) {
+      <button type="button" mat-menu-item (click)="selectLightTheme(theme.id)">
+        @if (theme.id === lightThemeId()) {
+          <mat-icon>check</mat-icon>
+        }
+        <span>{{ theme.label }}</span>
+      </button>
+    }
+  </mat-menu>
+
+  <mat-menu #darkThemeMenu="matMenu">
+    @for (theme of themes(); track theme.id) {
+      <button type="button" mat-menu-item (click)="selectDarkTheme(theme.id)">
+        @if (theme.id === darkThemeId()) {
+          <mat-icon>check</mat-icon>
+        }
+        <span>{{ theme.label }}</span>
+      </button>
+    }
+  </mat-menu>
+
+  <!-- The only thing shown in full-screen mode. Sits bottom-centre, roughly where
+       Antarctica renders in the Natural Earth projection, per the request to put an
+       "X on Antarctica" — Esc works too (native to the Fullscreen API). -->
+  @if (isFullscreen()) {
+    <button
+      type="button"
+      class="map-exit-fullscreen"
+      (click)="exitFullscreen()"
+      matTooltip="Exit full screen (Esc)"
+      aria-label="Exit full screen"
+    >
+      <mat-icon>close</mat-icon>
+    </button>
+  }
+
+  @if (loading()) {
+    <div class="map-overlay">
+      <mat-spinner diameter="44" strokeWidth="3" />
+      <span class="map-overlay__text">Loading system locations…</span>
+    </div>
+  } @else if (loadFailed()) {
+    <div class="map-note map-note--error">
+      <mat-icon>cloud_off</mat-icon>
+      <span>Could not load system locations.</span>
+      <button type="button" class="map-note__retry" (click)="retry()">Retry</button>
+    </div>
+  } @else if (locationCount() === 0) {
+    <div class="map-note">
+      <mat-icon>place</mat-icon>
+      <span>No systems selected for display</span>
+    </div>
+  }
+</div>

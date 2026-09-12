@@ -1,0 +1,26 @@
+/// A URL recorded against a system (e.g. its documentation or dashboard), classified by
+/// `UrlType`.
+model SystemUrl {
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  id          Int     @id @default(autoincrement())
+  /// @DtoRelationIncludeId
+  systemId    Int
+  /// @DtoRelationIncludeId
+  urlTypeId   Int
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  /// @maxLength 255
+  description String? @db.VarChar(255)
+  /// @maxLength 500
+  url         String  @db.VarChar(500)
+
+  /// @DtoReadOnly
+  system  System  @relation(fields: [systemId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  /// @DtoReadOnly
+  urlType UrlType @relation(fields: [urlTypeId], references: [id], onUpdate: Cascade)
+
+  @@index([systemId])
+  @@index([urlTypeId])
+  @@map("system_urls")
+}

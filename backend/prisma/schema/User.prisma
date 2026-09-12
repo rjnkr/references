@@ -1,0 +1,19 @@
+/// A Tidalis staff member, auto-provisioned on first successful SSO login.
+model User {
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  id          Int       @id @default(autoincrement())
+  /// @maxLength 255
+  email       String    @unique @db.VarChar(255)
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  /// @maxLength 150
+  name        String?   @db.VarChar(150)
+  /// @DtoReadOnly
+  createdAt   DateTime  @default(now())
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  lastLoginAt DateTime?
+
+  @@map("users")
+}

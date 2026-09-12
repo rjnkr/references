@@ -1,0 +1,13 @@
+/// Lookup table classifying uploaded project documents, e.g. "Contract".
+model DocumentType {
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  id   Int    @id @default(autoincrement())
+  /// @maxLength 100
+  name String @unique @db.VarChar(100)
+
+  systemDocuments  SystemDocument[]
+  projectDocuments ProjectDocument[]
+
+  @@map("document_types")
+}

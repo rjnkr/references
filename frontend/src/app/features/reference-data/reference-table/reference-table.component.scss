@@ -1,0 +1,139 @@
+:host {
+  display: block;
+}
+
+.ref-card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* -------------------------------------------------------------------------- heading */
+
+.ref-heading {
+  min-width: 220px;
+}
+
+.ref-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--tidalis-muted);
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    color: var(--tidalis-blue);
+    text-decoration: none;
+  }
+}
+
+.ref-heading__icon {
+  vertical-align: -6px;
+  margin-right: 4px;
+  color: var(--tidalis-blue);
+}
+
+/* --------------------------------------------------------------------------- toolbar */
+
+.ref-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.ref-search {
+  width: 260px;
+
+  ::ng-deep .mat-mdc-form-field-infix {
+    min-height: 40px;
+  }
+}
+
+.ref-progress {
+  --mdc-linear-progress-active-indicator-color: var(--tidalis-orange);
+  height: 3px;
+}
+
+.ref-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: #fdeadb;
+  color: #8a4a12;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--tidalis-border);
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* ------------------------------------------------------------------------------ table */
+
+.ref-body {
+  max-height: calc(100vh - var(--tidalis-navbar-height) - var(--tidalis-footer-height) - 220px);
+  overflow-y: auto;
+}
+
+.ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 10px 14px;
+    background: var(--tidalis-header-bg);
+    border-bottom: 1px solid var(--tidalis-border);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--tidalis-blue-dark);
+    white-space: nowrap;
+    text-align: left;
+  }
+
+  td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #edf0f4;
+    vertical-align: middle;
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+
+  tr:hover td {
+    background: var(--tidalis-blue-light);
+  }
+}
+
+.text-end {
+  text-align: right;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.ref-table__actions {
+  white-space: nowrap;
+}
+
+.ref-table__delete:hover {
+  color: #b3261e;
+}

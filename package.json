@@ -1,0 +1,18 @@
+{
+  "name": "tidalis-references",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Tidalis project reference database (NestJS + Angular)",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:backend": "npm run start:dev --workspace=backend",
+    "dev:frontend": "npm run start --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "db:up": "docker compose up -d mariadb",
+    "db:down": "docker compose down"
+  }
+}

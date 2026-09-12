@@ -1,0 +1,203 @@
+<section class="tidalis-card claude-card">
+  <div class="tidalis-card-header">
+    <div class="claude-heading">
+      <h1>
+        <mat-icon class="claude-heading__icon">smart_toy</mat-icon>
+        Connect Claude
+      </h1>
+      <div class="tidalis-card-subtitle">
+        Let Claude answer questions about project references directly from this database.
+      </div>
+    </div>
+  </div>
+
+  @if (loadingKey()) {
+    <mat-progress-bar mode="indeterminate" class="claude-progress"></mat-progress-bar>
+  }
+
+  <div class="tidalis-card-body claude-body">
+    <!-- ------------------------------------------------------------------- intro -->
+    <p class="claude-lead">
+      This application exposes an <strong>MCP</strong> (Model Context Protocol) server, so
+      Claude Desktop, Claude Code and other MCP-compatible clients can query project
+      references, ports, pricing and the reference/lookup tables in natural language —
+      without anyone copying data into a chat by hand.
+    </p>
+
+    @if (keyMissing()) {
+      <div class="claude-warning">
+        <mat-icon>warning</mat-icon>
+        <div>
+          <strong>MCP_API_KEY is not configured on this server.</strong> The MCP endpoint
+          is disabled and the snippets below use a placeholder. Ask an administrator to
+          set it before this integration will work.
+        </div>
+      </div>
+    }
+
+    <!-- --------------------------------------------------------------- prerequisites -->
+    <h2 class="claude-section-title">Before you start</h2>
+    <ul class="claude-list">
+      <li>An administrator has set <code>MCP_API_KEY</code> on the server (see above if not).</li>
+      <li>
+        The server must be reachable from wherever Claude runs — e.g. from your laptop
+        over the company network, not just from the server itself.
+      </li>
+    </ul>
+
+    <!-- --------------------------------------------------------------------- step 1 -->
+    <h2 class="claude-section-title">1. Your connection details</h2>
+    <div class="claude-field-row">
+      <span class="claude-field-label">Server URL</span>
+      <code class="claude-inline-code">{{ mcpUrl }}</code>
+      <button
+        mat-icon-button
+        type="button"
+        matTooltip="Copy URL"
+        (click)="copy(mcpUrl, 'Server URL')"
+      >
+        <mat-icon>content_copy</mat-icon>
+      </button>
+    </div>
+    <div class="claude-field-row">
+      <span class="claude-field-label">Header</span>
+      <code class="claude-inline-code">X-MCP-Key: {{ displayKey() }}</code>
+      <button
+        mat-icon-button
+        type="button"
+        matTooltip="Copy key"
+        [disabled]="keyMissing()"
+        (click)="copy(displayKey(), 'Key')"
+      >
+        <mat-icon>content_copy</mat-icon>
+      </button>
+    </div>
+    <p class="claude-hint">
+      Machine clients can't follow a browser sign-in redirect, so the MCP endpoint uses
+      this shared secret instead of your session cookie. This is your organization's live
+      key, shown to you because you're signed in — see the security note below.
+    </p>
+
+    <!-- --------------------------------------------------------------------- step 2 -->
+    <h2 class="claude-section-title">2. Add the configuration</h2>
+    <p>
+      Both <strong>Claude Desktop</strong> and <strong>Claude Code</strong> use the same
+      JSON shape. Your key is already filled in below — copy and paste it as-is.
+    </p>
+
+    <div class="claude-code-block">
+      <button
+        mat-icon-button
+        type="button"
+        class="claude-code-block__copy"
+        matTooltip="Copy configuration"
+        (click)="copy(configSnippet(), 'Configuration')"
+      >
+        <mat-icon>content_copy</mat-icon>
+      </button>
+      <pre>{{ configSnippet() }}</pre>
+    </div>
+
+    <div class="row g-3 claude-locations">
+      <div class="col-12 col-md-6">
+        <div class="claude-location">
+          <div class="claude-location__title">
+            <mat-icon>desktop_windows</mat-icon>
+            Claude Desktop
+          </div>
+          <p>Add the block above to the <code>mcpServers</code> config file:</p>
+          <ul class="claude-list claude-list--tight">
+            <li>macOS: <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
+            <li>Windows: <code>%APPDATA%\Claude\claude_desktop_config.json</code></li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="claude-location">
+          <div class="claude-location__title">
+            <mat-icon>terminal</mat-icon>
+            Claude Code
+          </div>
+          <p>
+            Add the same block to a <code>.mcp.json</code> file in your project root (or
+            your user-level Claude Code config, to make it available everywhere).
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <p class="claude-hint">
+      Other MCP-compatible clients (including Claude.ai's own connector settings, where
+      available) accept the same server URL and header — consult that client's own
+      documentation for exactly where to enter them.
+    </p>
+
+    <!-- --------------------------------------------------------------------- step 3 -->
+    <h2 class="claude-section-title">3. Restart and verify</h2>
+    <p>Restart the client so it picks up the new configuration, then just ask it something — see the examples below.</p>
+    <p>To sanity-check the server by hand first, without any client:</p>
+    <div class="claude-code-block">
+      <button
+        mat-icon-button
+        type="button"
+        class="claude-code-block__copy"
+        matTooltip="Copy command"
+        (click)="copy(curlSnippet(), 'Command')"
+      >
+        <mat-icon>content_copy</mat-icon>
+      </button>
+      <pre>{{ curlSnippet() }}</pre>
+    </div>
+    <p class="claude-hint">A working connection keeps the terminal open, streaming an event log rather than exiting.</p>
+
+    <!-- ----------------------------------------------------------------------- tools -->
+    <h2 class="claude-section-title">Available tools</h2>
+    <div class="claude-table-wrap tidalis-scroll-x">
+      <table class="claude-table">
+        <thead>
+          <tr>
+            <th>Tool</th>
+            <th>Arguments</th>
+            <th>Returns</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (tool of tools; track tool.name) {
+            <tr>
+              <td><code>{{ tool.name }}</code></td>
+              <td>{{ tool.args }}</td>
+              <td>{{ tool.returns }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- --------------------------------------------------------------------- examples -->
+    <h2 class="claude-section-title">Try asking</h2>
+    <ul class="claude-list">
+      @for (prompt of examplePrompts; track prompt) {
+        <li>“{{ prompt }}”</li>
+      }
+    </ul>
+
+    <!-- --------------------------------------------------------------------- security -->
+    <div class="claude-security">
+      <mat-icon>shield</mat-icon>
+      <div>
+        <strong>This key is not scoped per system or project.</strong> Aside from
+        <code>search_reference_systems</code> (which only returns reference-approved,
+        non-sensitive systems), every tool above returns full data, including systems and
+        projects marked sensitive. Share the <code>X-MCP-Key</code> only with people and
+        clients that should see everything a signed-in user can see, keep it out of
+        version control, and ask your administrator to rotate <code>MCP_API_KEY</code> on
+        the server if it may have leaked.
+      </div>
+    </div>
+
+    <a class="claude-back" routerLink="/">
+      <mat-icon>arrow_back</mat-icon>
+      <span>Back to home</span>
+    </a>
+  </div>
+</section>

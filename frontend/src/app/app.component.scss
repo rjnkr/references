@@ -1,0 +1,197 @@
+:host {
+  display: block;
+  min-height: 100%;
+}
+
+/* ---------------------------------------------------------------------------- navbar */
+
+.tidalis-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  height: var(--tidalis-navbar-height);
+  background: var(--tidalis-blue);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(9, 58, 122, 0.25);
+
+  &__inner {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    height: 100%;
+    padding: 0 20px;
+  }
+
+  &__spacer {
+    flex: 1 1 auto;
+  }
+
+  &__tagline {
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: rgba(255, 255, 255, 0.75);
+  }
+}
+
+.tidalis-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  text-decoration: none;
+
+  &:hover {
+    color: #fff;
+    text-decoration: none;
+    opacity: 0.92;
+  }
+
+  &__mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex: 0 0 auto;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.88);
+
+    img {
+      display: block;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  &__text {
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 0.035em;
+    line-height: 1;
+  }
+}
+
+.tidalis-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.22);
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 5px;
+    color: rgba(255, 255, 255, 0.86);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      text-decoration: none;
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  &__link {
+    padding: 7px 12px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.88);
+    white-space: nowrap;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #fff;
+      text-decoration: none;
+    }
+
+    &--active {
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+      box-shadow: inset 0 -2px 0 var(--tidalis-orange);
+    }
+  }
+}
+
+/* ------------------------------------------------------------------------ user chip */
+
+.tidalis-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 8px 4px 4px;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.14);
+  }
+
+  &__avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--tidalis-orange);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  &__name {
+    max-width: 190px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__caret mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .tidalis-user__name {
+    display: none;
+  }
+
+  .tidalis-nav__link {
+    font-size: 0.8rem;
+    padding: 6px 8px;
+  }
+}
+
+/* ---------------------------------------------------------------------------- footer */
+
+.tidalis-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--tidalis-footer-height);
+  padding: 0 16px;
+  font-size: 0.75rem;
+  color: var(--tidalis-muted);
+  border-top: 1px solid var(--tidalis-border);
+  background: #fff;
+}

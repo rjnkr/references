@@ -1,0 +1,73 @@
+<header class="tidalis-navbar">
+  <div class="tidalis-navbar__inner">
+    <!-- Brand: the official Tidalis mark on a light tile (the mark itself is solid black,
+         so it needs a light backdrop to read against the dark navbar). -->
+    <a class="tidalis-brand" routerLink="/" aria-label="Tidalis home">
+      <span class="tidalis-brand__mark">
+        <img src="favicon-192x192.png" alt="" width="20" height="20" />
+      </span>
+      <span class="tidalis-brand__text">Tidalis</span>
+    </a>
+
+    @if (auth.isAuthenticated()) {
+      <nav class="tidalis-nav" aria-label="Main">
+        <a class="tidalis-nav__icon" routerLink="/" title="Home" aria-label="Home">
+          <mat-icon>home</mat-icon>
+        </a>
+        <a
+          class="tidalis-nav__link"
+          routerLink="/systems"
+          routerLinkActive="tidalis-nav__link--active"
+        >
+          Systems
+        </a>
+        <a
+          class="tidalis-nav__link"
+          routerLink="/projects"
+          routerLinkActive="tidalis-nav__link--active"
+        >
+          Projects
+        </a>
+        <a class="tidalis-nav__link" routerLink="/map" routerLinkActive="tidalis-nav__link--active">
+          World Map
+        </a>
+      </nav>
+
+      <div class="tidalis-navbar__spacer"></div>
+
+      <button
+        type="button"
+        class="tidalis-user"
+        [matMenuTriggerFor]="userMenu"
+        aria-label="Account menu"
+      >
+        <span class="tidalis-user__avatar">{{ auth.initials() }}</span>
+        <span class="tidalis-user__name">{{ auth.user()?.name || auth.user()?.email }}</span>
+        <mat-icon class="tidalis-user__caret">expand_more</mat-icon>
+      </button>
+
+      <mat-menu #userMenu="matMenu" xPosition="before">
+        <div class="tidalis-user-card" (click)="$event.stopPropagation()">
+          <div class="tidalis-user-card__name">{{ auth.user()?.name }}</div>
+          <div class="tidalis-user-card__email">{{ auth.user()?.email }}</div>
+        </div>
+        <mat-divider></mat-divider>
+        <button mat-menu-item type="button" (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Logout</span>
+        </button>
+      </mat-menu>
+    } @else {
+      <div class="tidalis-navbar__spacer"></div>
+      <span class="tidalis-navbar__tagline">Project References</span>
+    }
+  </div>
+</header>
+
+<main class="tidalis-content container-fluid">
+  <router-outlet />
+</main>
+
+<footer class="tidalis-footer">
+  <span>&copy; {{ year }} Tidalis — Project References. Internal use only.</span>
+</footer>

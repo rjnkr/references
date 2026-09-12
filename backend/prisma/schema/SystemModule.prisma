@@ -1,0 +1,19 @@
+/// Join table: the named (lookup) modules delivered as part of a system.
+model SystemModule {
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  id       Int @id @default(autoincrement())
+  /// @DtoRelationIncludeId
+  systemId Int
+  /// @DtoRelationIncludeId
+  moduleId Int
+
+  /// @DtoReadOnly
+  system System @relation(fields: [systemId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  /// @DtoReadOnly
+  module Module @relation(fields: [moduleId], references: [id], onUpdate: Cascade)
+
+  @@unique([systemId, moduleId])
+  @@index([moduleId])
+  @@map("system_modules")
+}

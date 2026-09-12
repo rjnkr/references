@@ -1,0 +1,19 @@
+/// An interface to an external (third party) system.
+model SystemExternalInterface {
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  id          Int     @id @default(autoincrement())
+  /// @DtoRelationIncludeId
+  systemId    Int
+  /// @maxLength 150
+  name        String  @db.VarChar(150)
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  description String? @db.Text
+
+  /// @DtoReadOnly
+  system System @relation(fields: [systemId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([systemId])
+  @@map("system_external_interfaces")
+}

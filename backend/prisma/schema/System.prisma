@@ -1,0 +1,91 @@
+/// A delivered Tidalis system, usable as a commercial reference. Zero, one or many
+/// Projects (the commercial deal) can point at the same System - e.g. an implementation
+/// project plus later maintenance-renewal projects.
+model System {
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  id                   Int         @id @default(autoincrement())
+  /// @maxLength 100
+  name                 String      @db.VarChar(100)
+  /// Free text scope of the system. Limited to 200 words at the API layer.
+  scope                String      @db.Text
+  projectType          ProjectType
+  /// Free text list of Tidalis products used
+  /// @maxLength 100
+  products             String      @db.VarChar(100)
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  description          String?     @db.Text
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  customerDetails      String?     @db.Text
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  endUserDetails       String?     @db.Text
+  /// Internal note - Tidalis employees only. Never expose this field to customers or
+  /// through any public-facing output (AI/MCP tools, reference search, customer-facing
+  /// exports) - it must stay confined to the internal admin UI/API.
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  internalNotes        String?     @db.Text
+  /// @DtoRelationIncludeId
+  countryId            Int
+  /// The UN/LOCODE where the delivered system itself is installed - the system's own
+  /// "main" location, distinct from every port it may additionally reference.
+  /// @DtoRelationIncludeId
+  systemUnlocodeId     Int
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  /// @maxLength 150
+  pocName              String?     @db.VarChar(150)
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  /// @maxLength 150
+  pocEmail             String?     @db.VarChar(150)
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  /// @maxLength 50
+  pocPhone             String?     @db.VarChar(50)
+  /// Commercially or politically sensitive - hide from AI/reference searches
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  isSensitive          Boolean     @default(false)
+  /// Customer approved use of this system as a public reference
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  canBeUsedAsReference Boolean     @default(false)
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  systemDecommissioned Boolean     @default(false)
+  /// Soft-delete flag. A "deleted" system is hidden from every normal read (list,
+  /// detail, map, MCP tools) exactly as if it had been hard-deleted, but the row and all
+  /// of its child data are kept so it can be restored from its audit trail entry.
+  /// @DtoReadOnly
+  deleted              Boolean     @default(false)
+  /// @DtoReadOnly
+  createdAt            DateTime    @default(now())
+  /// @DtoReadOnly
+  updatedAt            DateTime    @updatedAt
+
+  /// @DtoReadOnly
+  country        Country  @relation(fields: [countryId], references: [id], onUpdate: Cascade)
+  /// @DtoReadOnly
+  systemUnlocode UnLocode @relation(fields: [systemUnlocodeId], references: [id], onUpdate: Cascade)
+
+  projects           Project[]
+  ports              SystemPort[]
+  modules            SystemModule[]
+  subSystems         SystemSubSystem[]
+  externalInterfaces SystemExternalInterface[]
+  people             SystemPerson[]
+  documents          SystemDocument[]
+  tags               SystemTagAssignment[]
+  urls               SystemUrl[]
+
+  @@index([countryId])
+  @@index([systemUnlocodeId])
+  @@index([projectType])
+  @@index([canBeUsedAsReference])
+  @@index([deleted])
+  @@map("systems")
+}

@@ -1,0 +1,29 @@
+/* ------------------------------------------------------------------------------------
+ * Tidalis design tokens.
+ * Palette + typography reused verbatim from the existing Tidalis reference application
+ * so this tool feels like part of the same suite.
+ * ---------------------------------------------------------------------------------- */
+
+:root {
+  --tidalis-blue: #0f4361;
+  --tidalis-blue-dark: #093a7a;
+  --tidalis-blue-light: #e8f0fb;
+  --tidalis-orange: #ee964b;
+  --tidalis-orange-dark: #d07a30;
+  --tidalis-text: #333333;
+  --tidalis-muted: #6c757d;
+  --tidalis-border: #dee2e6;
+  --tidalis-bg: #f4f6fb;
+  --tidalis-card-bg: #ffffff;
+  --tidalis-navbar-height: 60px;
+  --tidalis-footer-height: 44px;
+
+  /* Derived tokens used across the app. */
+  --tidalis-font: 'Nunito', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --tidalis-radius: 6px;
+  --tidalis-shadow: 0 1px 3px rgba(15, 67, 97, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --tidalis-shadow-lg: 0 8px 28px rgba(9, 58, 122, 0.18);
+  --tidalis-row-hover: #f2f6fd;
+  --tidalis-row-selected: var(--tidalis-blue-light);
+  --tidalis-header-bg: #eef2f9;
+}

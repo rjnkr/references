@@ -1,0 +1,16 @@
+/// A sub-system that is part of the delivered solution, e.g. "VHF", "CCTV".
+model SystemSubSystem {
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  id       Int    @id @default(autoincrement())
+  /// @DtoRelationIncludeId
+  systemId Int
+  /// @maxLength 150
+  name     String @db.VarChar(150)
+
+  /// @DtoReadOnly
+  system System @relation(fields: [systemId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([systemId])
+  @@map("system_sub_systems")
+}

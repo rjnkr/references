@@ -1,0 +1,455 @@
+/* ====================================================================================
+ * World map.
+ *
+ * This screen deliberately runs its OWN palette — a deep navy sea in dark mode, the same
+ * green markers in both themes — rather than the Tidalis blue/orange chrome around it, so
+ * the map reads as a
+ * self-contained instrument rather than another form panel. Every colour below is a
+ * custom property on `.map-shell` so the light/dark toggle can simply redefine them
+ * under `.map-shell--light` instead of duplicating each rule.
+ * ================================================================================== */
+
+:host {
+  display: block;
+  /* Cancel `.tidalis-content`'s padding so the map is truly full-bleed between the
+     navbar and the footer. */
+  margin: -20px -24px -28px;
+  height: calc(100vh - var(--tidalis-navbar-height) - var(--tidalis-footer-height));
+}
+
+@media (max-width: 767.98px) {
+  :host {
+    margin: -14px -12px -20px;
+  }
+}
+
+.map-shell {
+  /* --- Dark palette (default) --------------------------------------------------- */
+  --map-sea-bright: #10305a;
+  --map-sea: #0a2342;
+  --map-sea-deep: #071a33;
+
+  /* The "main" marker green, and its border, are the same literal colours in both themes
+     (previously dark mode used its own lighter mint fill, and the border colour/width
+     changed with the theme too) - always a thin, very light green ring around the
+     marker's own darker green fill. */
+  --map-point: #ccf535;
+  --map-point-strong: #2f8f52;
+  --map-point-hover-fill: #3fae66;
+  --map-marker-stroke: #d7f7e0;
+  --map-count-text: #ffffff;
+
+  --map-satellite-fill: #2f8f52;
+  --map-satellite-hover-fill: #1f6b3a;
+  --map-loading-fill: #fff3d6;
+
+  /* Location (port) markers - deliberately fixed across both themes rather than tinted
+     per-theme like the "main" green above, so it reads as one consistent, literal colour
+     wherever the map is viewed. */
+  --map-point-location: #f8e7c4;
+  --map-point-location-stroke: rgba(122, 90, 40, 0.6);
+  --map-point-location-hover-fill: #fbf1dc;
+
+  --map-tooltip-bg: rgba(6, 18, 34, 0.95);
+  --map-tooltip-border: rgba(127, 217, 154, 0.35);
+  --map-tooltip-text: #eef5ff;
+  --map-tooltip-sub-text: rgba(190, 214, 240, 0.85);
+
+  --map-control-bg: rgba(8, 26, 48, 0.82);
+  --map-control-border: rgba(160, 200, 245, 0.28);
+  --map-control-text: #dbe9ff;
+  --map-control-hover-bg: rgba(18, 52, 92, 0.95);
+  --map-control-hover-border: rgba(127, 217, 154, 0.5);
+  --map-control-hover-text: #ffffff;
+
+  --map-overlay-bg: rgba(7, 26, 51, 0.35);
+  --map-overlay-text: rgba(222, 235, 252, 0.85);
+
+  --map-note-bg: rgba(8, 26, 48, 0.86);
+  --map-note-border: rgba(160, 200, 245, 0.24);
+  --map-note-text: rgba(226, 237, 252, 0.92);
+  --map-note-icon: rgba(127, 217, 154, 0.9);
+  --map-note-error-icon: #f3a49a;
+  --map-note-retry-border: rgba(127, 217, 154, 0.5);
+  --map-note-retry-text: #b9f3cd;
+  --map-note-retry-hover-bg: rgba(127, 217, 154, 0.16);
+
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background:
+    radial-gradient(140% 100% at 50% 0%, var(--map-sea-bright) 0%, var(--map-sea) 45%, var(--map-sea-deep) 100%);
+  cursor: grab;
+  transition: background 200ms ease;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &.is-busy {
+    cursor: progress;
+  }
+
+  /* --- Light palette --------------------------------------------------------------
+   * A near-white sea/land background; the marker green and its border stay the same as
+   * dark mode (set once in the base `.map-shell` block above) so the two modes read as
+   * the same instrument. */
+  &.map-shell--light {
+    --map-sea-bright: #ffffff;
+    --map-sea: #ffffff;
+    --map-sea-deep: #ffffff;
+
+    --map-tooltip-bg: rgba(255, 255, 255, 0.97);
+    --map-tooltip-border: rgba(31, 50, 69, 0.18);
+    --map-tooltip-text: #1c2b3a;
+    --map-tooltip-sub-text: rgba(28, 43, 58, 0.65);
+
+    --map-control-bg: rgba(255, 255, 255, 0.86);
+    --map-control-border: rgba(31, 50, 69, 0.18);
+    --map-control-text: #1c2b3a;
+    --map-control-hover-bg: rgba(255, 255, 255, 0.98);
+    --map-control-hover-border: rgba(47, 143, 82, 0.5);
+    --map-control-hover-text: #14301f;
+
+    --map-overlay-bg: rgba(255, 255, 255, 0.55);
+    --map-overlay-text: rgba(28, 43, 58, 0.85);
+
+    --map-note-bg: rgba(255, 255, 255, 0.92);
+    --map-note-border: rgba(31, 50, 69, 0.18);
+    --map-note-text: rgba(28, 43, 58, 0.9);
+    --map-note-icon: rgba(47, 143, 82, 0.9);
+    --map-note-error-icon: #c23b2e;
+    --map-note-retry-border: rgba(47, 143, 82, 0.55);
+    --map-note-retry-text: #1f6b3a;
+    --map-note-retry-hover-bg: rgba(47, 143, 82, 0.14);
+  }
+
+  /* The Fullscreen API already makes the fullscreened element fill the screen in every
+     evergreen browser, but this pins it explicitly so `:host`'s own margin/height never
+     leaks a border in — the whole point is a screenshot with nothing else visible. */
+  &:fullscreen {
+    width: 100vw;
+    height: 100vh;
+  }
+}
+
+.map-target {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  background: transparent;
+
+  /* OpenLayers' own zoom/rotate/attribution controls — restyled to match the custom
+     `.map-controls` buttons below rather than showing two different control styles. */
+  ::ng-deep .ol-zoom {
+    display: none; /* replaced by `.map-controls__btn` zoom in/out below */
+  }
+
+  ::ng-deep .ol-attribution {
+    right: auto;
+    left: 8px;
+    bottom: 8px;
+
+    button {
+      display: none;
+    }
+
+    ul {
+      font-size: 0.6875rem;
+      color: var(--map-control-text);
+      text-shadow: none;
+      background: var(--map-control-bg);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------- markers */
+
+/* The dots themselves are canvas-rendered by OpenLayers (see `styleForFeature()` in the
+   component) — colours there are read from the same custom properties above, so this
+   file only styles what's still real DOM: the fanned-out cluster satellites. */
+
+.map-satellites {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+}
+
+/* Created imperatively (`document.createElement`, see `renderSatellites()`), so — like
+   the old D3-created SVG elements before them — these never get Angular's view-encapsulation
+   scoping attribute and need `::ng-deep` to be styled at all. */
+:host ::ng-deep .map-point__satellite {
+  position: absolute;
+  width: #{2 * 6.5px};
+  height: #{2 * 6.5px};
+  margin: -6.5px 0 0 -6.5px;
+  border-radius: 50%;
+  background: var(--map-satellite-fill);
+  border: 0.5px solid var(--map-marker-stroke);
+  cursor: pointer;
+  pointer-events: all;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.55));
+  transform: translate(0, 0) scale(0);
+  transition:
+    transform 160ms cubic-bezier(0.33, 1, 0.68, 1),
+    background 120ms ease;
+
+  &.is-expanded {
+    transform: translate(var(--dx), var(--dy)) scale(1);
+  }
+
+  &:hover {
+    background: var(--map-satellite-hover-fill);
+  }
+
+  &.map-point__satellite--location {
+    background: var(--map-point-location);
+    border-color: var(--map-point-location-stroke);
+
+    &:hover {
+      background: var(--map-point-location-hover-fill);
+    }
+  }
+
+  /* While the project detail is being fetched. */
+  &.is-loading {
+    background: var(--map-loading-fill);
+    animation: map-marker-pulse 900ms ease-in-out infinite;
+  }
+}
+
+@keyframes map-marker-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* ---------------------------------------------------------------------------- tooltip */
+
+.map-tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-width: 280px;
+  padding: 6px 10px;
+  border: 1px solid var(--map-tooltip-border);
+  border-radius: 6px;
+  background: var(--map-tooltip-bg);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  color: var(--map-tooltip-text);
+  font-family: var(--tidalis-font);
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity 120ms ease,
+    background 200ms ease,
+    color 200ms ease;
+  white-space: nowrap;
+
+  &.is-visible {
+    opacity: 1;
+  }
+
+  &__title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__sub {
+    font-size: 0.6875rem;
+    color: var(--map-tooltip-sub-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* --------------------------------------------------------------------- theme picker menu
+ * Rendered into Angular Material's global CDK overlay (outside `.map-shell`), so it takes
+ * the app's usual light chrome rather than the map's own `--map-*` palette - same as every
+ * other `mat-menu` in the app (e.g. the Systems grid's "Columns" menu). */
+
+::ng-deep .theme-menu__value {
+  margin-left: auto;
+  padding-left: 12px;
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 0.8125rem;
+}
+
+/* --------------------------------------------------------------------------- controls */
+
+.map-controls {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid var(--map-control-border);
+    border-radius: 8px;
+    background: var(--map-control-bg);
+    color: var(--map-control-text);
+    cursor: pointer;
+    backdrop-filter: blur(3px);
+    transition:
+      background 120ms ease,
+      color 120ms ease,
+      border-color 120ms ease;
+
+    &:hover {
+      background: var(--map-control-hover-bg);
+      border-color: var(--map-control-hover-border);
+      color: var(--map-control-hover-text);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--map-point);
+      outline-offset: 2px;
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+/* The only control shown in full-screen mode. Bottom-centre, roughly where Antarctica
+   renders in the Natural Earth projection — the requested "X on Antarctica". */
+.map-exit-fullscreen {
+  position: absolute;
+  left: 50%;
+  bottom: 6%;
+  z-index: 8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--map-control-border);
+  border-radius: 50%;
+  background: var(--map-control-bg);
+  color: var(--map-control-text);
+  cursor: pointer;
+  backdrop-filter: blur(3px);
+  transform: translateX(-50%);
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease;
+
+  &:hover {
+    background: var(--map-control-hover-bg);
+    border-color: var(--map-control-hover-border);
+    color: var(--map-control-hover-text);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--map-point);
+    outline-offset: 2px;
+  }
+
+  mat-icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+  }
+}
+
+/* --------------------------------------------------------------- loading / empty state */
+
+.map-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--map-overlay-bg);
+  transition: background 200ms ease;
+
+  &__text {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--map-overlay-text);
+  }
+
+  ::ng-deep circle {
+    stroke: var(--map-point-strong) !important;
+  }
+}
+
+.map-note {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 7;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 16px;
+  border: 1px solid var(--map-note-border);
+  border-radius: 999px;
+  background: var(--map-note-bg);
+  color: var(--map-note-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transform: translate(-50%, -50%);
+  transition:
+    background 200ms ease,
+    color 200ms ease;
+
+  mat-icon {
+    font-size: 19px;
+    width: 19px;
+    height: 19px;
+    color: var(--map-note-icon);
+  }
+
+  &--error mat-icon {
+    color: var(--map-note-error-icon);
+  }
+
+  &__retry {
+    padding: 2px 10px;
+    border: 1px solid var(--map-note-retry-border);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--map-note-retry-text);
+    font: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--map-note-retry-hover-bg);
+    }
+  }
+}

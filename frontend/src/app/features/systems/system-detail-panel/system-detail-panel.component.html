@@ -1,0 +1,805 @@
+<div class="panel">
+  <!-- ------------------------------------------------------------------- header -->
+  <header class="panel__header">
+    <div class="panel__titles">
+      <div class="panel__eyebrow">
+        @if (mode === 'create') {
+          New system
+        } @else if (mode === 'edit') {
+          Editing system
+        } @else {
+          System
+        }
+      </div>
+
+      <h2 class="panel__title">
+        @if (mode === 'create') {
+          Add a system
+        } @else {
+          <span>{{ currentSystem()?.name }}</span>
+        }
+      </h2>
+
+      @if (currentSystem(); as system) {
+        <div class="panel__chips">
+          <span class="tidalis-chip tidalis-chip--blue">{{
+            projectTypeLabels[system.projectType] || system.projectType
+          }}</span>
+          @if (system.country && system.country.name) {
+            <span class="tidalis-chip tidalis-chip--grey">{{ system.country.name }}</span>
+          }
+          @if (system.canBeUsedAsReference) {
+            <span class="tidalis-chip tidalis-chip--green">Usable as reference</span>
+          }
+          @if (system.isSensitive) {
+            <span class="tidalis-chip tidalis-chip--orange">Sensitive</span>
+          }
+          @if (system.systemDecommissioned) {
+            <span class="tidalis-chip tidalis-chip--red">Decommissioned</span>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="panel__actions">
+      @if (mode === 'view') {
+        <button mat-flat-button color="primary" type="button" (click)="startEdit()">
+          <mat-icon>edit</mat-icon>
+          <span>Edit</span>
+        </button>
+        <button
+          mat-stroked-button
+          type="button"
+          class="panel__delete"
+          (click)="requestDelete()"
+          matTooltip="Delete this system"
+        >
+          <mat-icon>delete_outline</mat-icon>
+          <span class="d-none d-lg-inline">Delete</span>
+        </button>
+      } @else {
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          [disabled]="saving()"
+          (click)="save()"
+        >
+          <mat-icon>save</mat-icon>
+          <span>{{ mode === 'create' ? 'Create' : 'Save' }}</span>
+        </button>
+        <button mat-stroked-button type="button" [disabled]="saving()" (click)="cancel()">
+          Cancel
+        </button>
+      }
+      <button mat-icon-button type="button" (click)="close()" aria-label="Close panel">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </header>
+
+  @if (selectedTags().length > 0) {
+    <div class="panel__tags">
+      @for (tag of selectedTags(); track tag.id) {
+        <span
+          class="tidalis-tag-chip"
+          [style.background-color]="tag.backgroundColor"
+          [style.color]="tag.textColor"
+          >{{ tag.name }}</span
+        >
+      }
+    </div>
+  }
+
+  @if (saving()) {
+    <mat-progress-bar mode="indeterminate" class="panel__progress"></mat-progress-bar>
+  }
+
+  @if (mode === 'view') {
+    <div class="panel__readonly-bar">
+      <mat-icon>visibility</mat-icon>
+      <span>Read-only view — choose <strong>Edit</strong> to make changes.</span>
+    </div>
+  }
+
+  <!-- --------------------------------------------------------------------- body -->
+  <div class="panel__body tidalis-panel-scroll">
+    <form [formGroup]="form" novalidate>
+      <mat-tab-group
+        animationDuration="140ms"
+        [selectedIndex]="tabIndex()"
+        (selectedIndexChange)="tabIndex.set($event)"
+      >
+        <!-- ============================================================ 1. General -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span>General</span>
+            @if (tabHasError(0)) {
+              <span class="tab-dot" title="Missing or invalid fields"></span>
+            }
+          </ng-template>
+          <div class="tab-content row g-3">
+            <div class="col-12 col-md-6">
+              <mat-form-field appearance="outline">
+                <mat-label>Name</mat-label>
+                <input matInput formControlName="name" maxlength="100" />
+                @if (form.get('name')?.hasError('required')) {
+                  <mat-error>Name is required</mat-error>
+                }
+                @if (form.get('name')?.hasError('maxlength')) {
+                  <mat-error>Name must be 100 characters or fewer</mat-error>
+                }
+              </mat-form-field>
+            </div>
+            <div class="col-12 col-md-6">
+              <app-unlocode-autocomplete
+                formControlName="systemUnlocode"
+                label="System UN/LOCODE *"></app-unlocode-autocomplete>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <mat-form-field appearance="outline">
+                <mat-label>Type</mat-label>
+                <mat-select formControlName="projectType">
+                  @for (type of projectTypes; track type) {
+                    <mat-option [value]="type">{{ projectTypeLabels[type] }}</mat-option>
+                  }
+                </mat-select>
+                @if (form.get('projectType')?.hasError('required')) {
+                  <mat-error>Type is required</mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <mat-form-field appearance="outline">
+                <mat-label>Country</mat-label>
+                <mat-select formControlName="countryId">
+                  @for (country of lookups.countries(); track country.id) {
+                    <mat-option [value]="country.id">
+                      {{ country.name }} ({{ country.isoCode }})
+                    </mat-option>
+                  }
+                </mat-select>
+                @if (form.get('countryId')?.hasError('required')) {
+                  <mat-error>Country is required</mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="col-12 col-md-4">
+              <mat-form-field appearance="outline">
+                <mat-label>Tags</mat-label>
+                <mat-select formControlName="tags" multiple>
+                  @for (tag of lookups.tags(); track tag.id) {
+                    <mat-option [value]="tag.id">{{ tag.name }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <div class="col-12">
+              <div class="panel__flags">
+                <mat-checkbox formControlName="canBeUsedAsReference">
+                  Can be used as a reference
+                </mat-checkbox>
+                <mat-checkbox formControlName="isSensitive">Sensitive system</mat-checkbox>
+                <mat-checkbox formControlName="systemDecommissioned">
+                  System decommissioned
+                </mat-checkbox>
+              </div>
+            </div>
+
+            @if (currentSystem(); as system) {
+              <div class="col-12">
+                <mat-divider></mat-divider>
+                <div class="panel__meta">
+                  <span>Created {{ system.createdAt | date: 'dd MMM yyyy, HH:mm' }}</span>
+                  <span>Last updated {{ system.updatedAt | date: 'dd MMM yyyy, HH:mm' }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </mat-tab>
+
+        <!-- ================================================= 2. Scope & Description -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span>Scope &amp; Description</span>
+            @if (tabHasError(1)) {
+              <span class="tab-dot"></span>
+            }
+          </ng-template>
+
+          <div class="tab-content row g-2">
+            <div class="col-12 col-md-6">
+              <mat-form-field appearance="outline">
+                <mat-label>Products</mat-label>
+                <input matInput formControlName="products" maxlength="100" />
+                @if (form.get('products')?.hasError('required')) {
+                  <mat-error>Products is required</mat-error>
+                }
+              </mat-form-field>
+            </div>
+
+            <div class="col-12">
+              <div class="share-hint">
+                <mat-icon>public</mat-icon>
+                <span>
+                  Public — visible to potential customers. High level description of the
+                  functionality.
+                </span>
+              </div>
+              <mat-form-field appearance="outline" class="tall-field">
+                <mat-label>Description</mat-label>
+                <textarea matInput formControlName="description" rows="8"></textarea>
+              </mat-form-field>
+            </div>
+
+            <div class="col-12">
+              <div class="share-hint">
+                <mat-icon>public</mat-icon>
+                <span>
+                  Public — visible to potential customers. Technical scope of the system, like
+                  number of users, datacenters, amount of sensors, integrations etc.
+                </span>
+              </div>
+              <mat-form-field appearance="outline" class="tall-field">
+                <mat-label>Scope</mat-label>
+                <textarea
+                  matInput
+                  formControlName="scope"
+                  rows="8"
+                  placeholder="Describe the delivered scope — aim for about 200 words."
+                ></textarea>
+                <mat-hint align="end">
+                  <span class="word-counter" [class.word-counter--over]="scopeOverLimit()">
+                    {{ scopeWords() }} / ~{{ scopeSoftLimit }} words
+                  </span>
+                </mat-hint>
+                @if (form.get('scope')?.hasError('required')) {
+                  <mat-error>Scope is required</mat-error>
+                }
+              </mat-form-field>
+              @if (scopeOverLimit()) {
+                <div class="soft-warning">
+                  <mat-icon>info</mat-icon>
+                  <span>
+                    Longer than the ~{{ scopeSoftLimit }}-word guidance. That is allowed, but
+                    shorter scopes are easier to reuse in bids.
+                  </span>
+                </div>
+              }
+            </div>
+
+            <div class="col-12">
+              <div class="soft-warning">
+                <mat-icon>lock</mat-icon>
+                <span>
+                  Internal use only — visible to Tidalis employees only. Never disclose this
+                  note to customers, or through AI/reference search or any other public-facing
+                  output.
+                </span>
+              </div>
+              <mat-form-field appearance="outline" class="tall-field">
+                <mat-label>Internal notes</mat-label>
+                <textarea matInput formControlName="internalNotes" rows="8"></textarea>
+              </mat-form-field>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- ================================================ 3. Ports & Locations -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span>Ports &amp; Locations</span>
+            <span class="tab-count">{{ ports.length }}</span>
+            @if (tabHasError(2)) {
+              <span class="tab-dot"></span>
+            }
+          </ng-template>
+
+          <div class="tab-content">
+            <div class="tidalis-section-title">Ports (UN/LOCODE)</div>
+
+            <div formArrayName="ports">
+              @for (row of ports.controls; track row; let i = $index) {
+                <div class="repeat-row" [formGroupName]="i">
+                  <div class="repeat-row__main">
+                    <app-unlocode-autocomplete
+                      formControlName="unlocode"
+                      label="UN/LOCODE *"
+                    ></app-unlocode-autocomplete>
+                  </div>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    class="repeat-row__remove"
+                    [disabled]="isReadonly()"
+                    matTooltip="Remove port"
+                    (click)="removeAt(ports, i)"
+                  >
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
+              } @empty {
+                <div class="tidalis-empty">No ports recorded for this system.</div>
+              }
+            </div>
+
+            <button
+              mat-stroked-button
+              type="button"
+              class="add-button"
+              [disabled]="isReadonly()"
+              (click)="addPort()"
+            >
+              <mat-icon>add</mat-icon>
+              <span>Add port</span>
+            </button>
+          </div>
+        </mat-tab>
+
+        <!-- ============================================= 4. Modules & Subsystems -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span>Modules &amp; Subsystems</span>
+            <span class="tab-count">{{
+              (form.get('modules')?.value?.length ?? 0) + subSystems.length + externalInterfaces.length
+            }}</span>
+            @if (tabHasError(3)) {
+              <span class="tab-dot"></span>
+            }
+          </ng-template>
+
+          <div class="tab-content">
+            <div class="row g-4">
+              <div class="col-12 col-lg-6">
+                <div class="tidalis-section-title">Modules</div>
+                @if (showModulesPicker()) {
+                  <mat-form-field appearance="outline">
+                    <mat-label>Modules</mat-label>
+                    <mat-select
+                      #modulesSelect
+                      formControlName="modules"
+                      multiple
+                      (closed)="onModulesSelectClosed()"
+                    >
+                      @for (module of lookups.modules(); track module.id) {
+                        <mat-option [value]="module.id">{{ module.name }}</mat-option>
+                      }
+                    </mat-select>
+                    @if (form.get('modules')?.hasError('minSelection')) {
+                      <mat-error>At least one module is required</mat-error>
+                    }
+                  </mat-form-field>
+                } @else if (selectedModules().length > 0) {
+                  <div class="module-list-display">
+                    <ul class="tidalis-plain-list">
+                      @for (module of selectedModules(); track module.id) {
+                        <li>{{ module.name }}</li>
+                      }
+                    </ul>
+                    @if (!isReadonly()) {
+                      <button
+                        mat-icon-button
+                        type="button"
+                        class="module-list-display__edit"
+                        (click)="startEditingModules()"
+                        aria-label="Edit modules"
+                      >
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                    }
+                  </div>
+                } @else {
+                  <div class="tidalis-empty">No modules selected.</div>
+                }
+              </div>
+
+              <div class="col-12 col-lg-6">
+                <div class="tidalis-section-title">Subsystems</div>
+                <div formArrayName="subSystems">
+                  @for (row of subSystems.controls; track row; let i = $index) {
+                    <div class="repeat-row" [formGroupName]="i">
+                      <div class="repeat-row__main">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Subsystem name</mat-label>
+                          <input matInput formControlName="name" maxlength="100" />
+                        </mat-form-field>
+                      </div>
+                      <button
+                        mat-icon-button
+                        type="button"
+                        class="repeat-row__remove"
+                        [disabled]="isReadonly()"
+                        (click)="removeAt(subSystems, i)"
+                      >
+                        <mat-icon>delete_outline</mat-icon>
+                      </button>
+                    </div>
+                  } @empty {
+                    <div class="tidalis-empty">No subsystems recorded.</div>
+                  }
+                </div>
+                <button
+                  mat-stroked-button
+                  type="button"
+                  class="add-button"
+                  [disabled]="isReadonly()"
+                  (click)="addSubSystem()"
+                >
+                  <mat-icon>add</mat-icon>
+                  <span>Add subsystem</span>
+                </button>
+              </div>
+            </div>
+
+            <mat-divider class="section-divider"></mat-divider>
+
+            <div class="tidalis-section-title">External interfaces</div>
+            <div formArrayName="externalInterfaces">
+              @for (row of externalInterfaces.controls; track row; let i = $index) {
+                <div class="repeat-row" [formGroupName]="i">
+                  <div class="repeat-row__main row g-2">
+                    <div class="col-12 col-md-5">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Interface name</mat-label>
+                        <input matInput formControlName="name" maxlength="100" />
+                      </mat-form-field>
+                    </div>
+                    <div class="col-12 col-md-7">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Description</mat-label>
+                        <input matInput formControlName="description" />
+                      </mat-form-field>
+                    </div>
+                  </div>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    class="repeat-row__remove"
+                    [disabled]="isReadonly()"
+                    (click)="removeAt(externalInterfaces, i)"
+                  >
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
+              } @empty {
+                <div class="tidalis-empty">No external interfaces recorded.</div>
+              }
+            </div>
+            <button
+              mat-stroked-button
+              type="button"
+              class="add-button"
+              [disabled]="isReadonly()"
+              (click)="addExternalInterface()"
+            >
+              <mat-icon>add</mat-icon>
+              <span>Add interface</span>
+            </button>
+          </div>
+        </mat-tab>
+
+        <!-- ================================================ 5. People & Contacts -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span>People &amp; Contacts</span>
+            <span class="tab-count">{{ people.length }}</span>
+            @if (tabHasError(4)) {
+              <span class="tab-dot"></span>
+            }
+          </ng-template>
+
+          <div class="tab-content">
+            <div class="tidalis-section-title">Point of contact</div>
+            <div class="row g-3">
+              <div class="col-12 col-md-4">
+                <mat-form-field appearance="outline">
+                  <mat-label>Contact name</mat-label>
+                  <input matInput formControlName="pocName" />
+                </mat-form-field>
+              </div>
+              <div class="col-12 col-md-4">
+                <mat-form-field appearance="outline">
+                  <mat-label>Contact email</mat-label>
+                  <input matInput type="email" formControlName="pocEmail" />
+                  @if (form.get('pocEmail')?.hasError('email')) {
+                    <mat-error>Enter a valid email address</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+              <div class="col-12 col-md-4">
+                <mat-form-field appearance="outline">
+                  <mat-label>Contact phone</mat-label>
+                  <input matInput formControlName="pocPhone" />
+                </mat-form-field>
+              </div>
+              <div class="col-12 col-lg-6">
+                <mat-form-field appearance="outline">
+                  <mat-label>Customer details</mat-label>
+                  <textarea matInput formControlName="customerDetails" rows="3"></textarea>
+                </mat-form-field>
+              </div>
+              <div class="col-12 col-lg-6">
+                <mat-form-field appearance="outline">
+                  <mat-label>End user details</mat-label>
+                  <textarea matInput formControlName="endUserDetails" rows="3"></textarea>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <mat-divider class="section-divider"></mat-divider>
+
+            <div class="tidalis-section-title">People involved</div>
+            <div formArrayName="people">
+              @for (row of people.controls; track row; let i = $index) {
+                <div class="repeat-row" [formGroupName]="i">
+                  <div class="repeat-row__main row g-2">
+                    <div class="col-12 col-md-4">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Name</mat-label>
+                        <input matInput formControlName="name" maxlength="100" />
+                      </mat-form-field>
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Role</mat-label>
+                        <input matInput formControlName="role" maxlength="100" />
+                      </mat-form-field>
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Email</mat-label>
+                        <input matInput type="email" formControlName="email" />
+                      </mat-form-field>
+                    </div>
+                  </div>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    class="repeat-row__remove"
+                    [disabled]="isReadonly()"
+                    (click)="removeAt(people, i)"
+                  >
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
+              } @empty {
+                <div class="tidalis-empty">Nobody recorded for this system yet.</div>
+              }
+            </div>
+            <button
+              mat-stroked-button
+              type="button"
+              class="add-button"
+              [disabled]="isReadonly()"
+              (click)="addPerson()"
+            >
+              <mat-icon>add</mat-icon>
+              <span>Add person</span>
+            </button>
+          </div>
+        </mat-tab>
+
+        <!-- =============================================================== 6. URLs -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span>URLs</span>
+            <span class="tab-count">{{ urls.length }}</span>
+            @if (tabHasError(5)) {
+              <span class="tab-dot" title="Missing or invalid fields"></span>
+            }
+          </ng-template>
+
+          <div class="tab-content">
+            <div class="tidalis-section-title">URLs</div>
+            <div formArrayName="urls">
+              @for (row of urls.controls; track row; let i = $index) {
+                <div class="repeat-row" [formGroupName]="i">
+                  <div class="repeat-row__main row g-2">
+                    <div class="col-12 col-md-3">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Type</mat-label>
+                        <mat-select formControlName="urlTypeId">
+                          @for (type of lookups.urlTypes(); track type.id) {
+                            <mat-option [value]="type.id">{{ type.name }}</mat-option>
+                          }
+                        </mat-select>
+                      </mat-form-field>
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <mat-form-field appearance="outline">
+                        <mat-label>Description</mat-label>
+                        <input
+                          matInput
+                          formControlName="description"
+                          placeholder="e.g. Internal wiki page"
+                        />
+                      </mat-form-field>
+                    </div>
+                    <div class="col-12 col-md-5">
+                      <mat-form-field appearance="outline">
+                        <mat-label>URL</mat-label>
+                        <input matInput formControlName="url" placeholder="https://…" />
+                      </mat-form-field>
+                      @if (row.get('url')?.value) {
+                        <a
+                          class="external-link"
+                          [href]="row.get('url')?.value"
+                          target="_blank"
+                          rel="noopener"
+                        >
+                          <mat-icon>open_in_new</mat-icon>
+                          <span>Open</span>
+                        </a>
+                      }
+                    </div>
+                  </div>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    class="repeat-row__remove"
+                    [disabled]="isReadonly()"
+                    (click)="removeAt(urls, i)"
+                  >
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
+              } @empty {
+                <div class="tidalis-empty">No URLs recorded.</div>
+              }
+            </div>
+            <button
+              mat-stroked-button
+              type="button"
+              class="add-button"
+              [disabled]="isReadonly()"
+              (click)="addUrl()"
+            >
+              <mat-icon>add</mat-icon>
+              <span>Add URL</span>
+            </button>
+          </div>
+        </mat-tab>
+
+        <!-- ========================================================== 7. Documents -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span>Documents</span>
+            <span class="tab-count">{{ documents().length }}</span>
+          </ng-template>
+
+          <div class="tab-content">
+            @if (!currentSystem()) {
+              <div class="soft-warning">
+                <mat-icon>info</mat-icon>
+                <span>Save the system first to attach documents.</span>
+              </div>
+            } @else {
+              <div class="doc-table-wrap tidalis-scroll-x">
+                <table class="doc-table">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>File name</th>
+                      <th class="text-end">Size</th>
+                      <th>Uploaded</th>
+                      <th>By</th>
+                      <th class="text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (doc of documents(); track doc.id) {
+                      <tr>
+                        <td>
+                          <span class="tidalis-chip tidalis-chip--blue">
+                            {{ doc.documentType ? doc.documentType.name : '—' }}
+                          </span>
+                        </td>
+                        <td class="doc-table__name" [title]="doc.fileName">{{ doc.fileName }}</td>
+                        <td class="text-end">{{ formatFileSize(doc.fileSize) }}</td>
+                        <td>{{ doc.uploadedAt | date: 'dd MMM yyyy' }}</td>
+                        <td>{{ doc.uploadedBy || '—' }}</td>
+                        <td class="text-center doc-table__actions">
+                          <a
+                            mat-icon-button
+                            [href]="downloadUrl(doc.id)"
+                            target="_blank"
+                            rel="noopener"
+                            matTooltip="Download"
+                            aria-label="Download document"
+                          >
+                            <mat-icon>download</mat-icon>
+                          </a>
+                          <button
+                            mat-icon-button
+                            type="button"
+                            class="doc-table__delete"
+                            matTooltip="Delete document"
+                            (click)="deleteDocument(doc)"
+                          >
+                            <mat-icon>delete_outline</mat-icon>
+                          </button>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="6" class="tidalis-empty">No documents attached yet.</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <mat-divider class="section-divider"></mat-divider>
+
+              <div class="tidalis-section-title">Upload a document</div>
+              @if (uploading()) {
+                <mat-progress-bar mode="indeterminate" class="panel__progress"></mat-progress-bar>
+              }
+              <div class="upload-row row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Document type *</mat-label>
+                    <mat-select
+                      [value]="uploadDocumentTypeId()"
+                      (valueChange)="uploadDocumentTypeId.set($event)"
+                    >
+                      @for (type of lookups.documentTypes(); track type.id) {
+                        <mat-option [value]="type.id">{{ type.name }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-12 col-md-5">
+                  <input
+                    #fileInput
+                    type="file"
+                    class="visually-hidden"
+                    (change)="onFileSelected($event)"
+                  />
+                  <div class="file-picker">
+                    <button mat-stroked-button type="button" (click)="fileInput.click()">
+                      <mat-icon>attach_file</mat-icon>
+                      <span>Choose file</span>
+                    </button>
+                    <span class="file-picker__name" [title]="selectedFile()?.name || ''">
+                      {{ selectedFile()?.name || 'No file selected' }}
+                    </span>
+                    @if (selectedFile()) {
+                      <button
+                        mat-icon-button
+                        type="button"
+                        matTooltip="Clear selection"
+                        (click)="clearSelectedFile(fileInput)"
+                      >
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-3">
+                  <button
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    class="upload-row__button"
+                    [disabled]="!selectedFile() || uploadDocumentTypeId() === null || uploading()"
+                    (click)="uploadDocument(fileInput)"
+                  >
+                    <mat-icon>upload</mat-icon>
+                    <span>Upload</span>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </form>
+  </div>
+</div>

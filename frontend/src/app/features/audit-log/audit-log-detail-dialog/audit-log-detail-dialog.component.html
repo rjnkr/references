@@ -1,0 +1,78 @@
+<h2 mat-dialog-title class="detail-title">
+  <span
+    class="tidalis-chip"
+    [class.tidalis-chip--green]="data.entry.action === 'CREATE' || data.entry.action === 'RESTORE'"
+    [class.tidalis-chip--blue]="data.entry.action === 'UPDATE'"
+    [class.tidalis-chip--red]="data.entry.action === 'DELETE'"
+  >
+    {{ actionLabels[data.entry.action] }}
+  </span>
+  <span>{{ title }}</span>
+</h2>
+
+@if (restoring()) {
+  <mat-progress-bar mode="indeterminate" class="detail-progress"></mat-progress-bar>
+}
+
+<mat-dialog-content>
+  <div class="detail-meta">
+    <span><mat-icon>person</mat-icon>{{ data.entry.userName || data.entry.userEmail }}</span>
+    <span>
+      <mat-icon>schedule</mat-icon>
+      {{ data.entry.createdAt | date: 'dd MMM yyyy, HH:mm:ss' : (tz.showUtc() ? 'UTC' : undefined) }}
+      {{ tz.showUtc() ? 'UTC' : '' }}
+    </span>
+    @if (isUpdate) {
+      <span><mat-icon>edit_note</mat-icon>{{ data.entry.changedFields?.length ?? 0 }} field(s) changed</span>
+    }
+  </div>
+
+  <div class="detail-table-wrap tidalis-scroll-x">
+    <table class="detail-table">
+      <thead>
+        <tr>
+          <th>Field</th>
+          @if (isUpdate) {
+            <th>Before</th>
+            <th>After</th>
+          } @else {
+            <th>{{ singleColumnLabel }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows; track row.label) {
+          <tr [class.detail-table__row--changed]="row.changed">
+            <td class="detail-table__label">{{ row.label }}</td>
+            @if (isUpdate) {
+              <td>{{ row.before }}</td>
+              <td>{{ row.after }}</td>
+            } @else {
+              <td>{{ isCreate || isRestore ? row.after : row.before }}</td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td [attr.colspan]="isUpdate ? 3 : 2" class="tidalis-empty">No data recorded.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  @if (isDelete) {
+    <button
+      mat-flat-button
+      color="primary"
+      type="button"
+      [disabled]="restoring()"
+      (click)="restore()"
+    >
+      <mat-icon>restore</mat-icon>
+      <span>Restore {{ data.entry.kind }}</span>
+    </button>
+  }
+  <button mat-button mat-dialog-close type="button" [disabled]="restoring()">Close</button>
+</mat-dialog-actions>

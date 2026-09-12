@@ -1,0 +1,22 @@
+/// A person involved in the system (Tidalis staff, customer, subcontractor).
+model SystemPerson {
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  id       Int     @id @default(autoincrement())
+  /// @DtoRelationIncludeId
+  systemId Int
+  /// @maxLength 150
+  name     String  @db.VarChar(150)
+  /// @maxLength 100
+  role     String  @db.VarChar(100)
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  /// @maxLength 150
+  email    String? @db.VarChar(150)
+
+  /// @DtoReadOnly
+  system System @relation(fields: [systemId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([systemId])
+  @@map("system_people")
+}

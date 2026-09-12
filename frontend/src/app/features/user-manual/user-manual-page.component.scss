@@ -1,0 +1,135 @@
+:host {
+  display: block;
+}
+
+.manual-card {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.manual-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-size: 1.4rem;
+  }
+
+  &__icon {
+    color: var(--tidalis-orange);
+  }
+}
+
+.manual-body {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+.manual-toc {
+  position: sticky;
+  top: calc(var(--tidalis-navbar-height) + 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  background: var(--tidalis-bg);
+  border: 1px solid var(--tidalis-border);
+  border-radius: var(--tidalis-radius);
+
+  &__title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--tidalis-muted);
+    padding: 2px 8px 6px;
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    color: var(--tidalis-text);
+    text-decoration: none;
+    font-size: 0.85rem;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: var(--tidalis-muted);
+    }
+
+    &:hover {
+      background: var(--tidalis-blue-light);
+    }
+  }
+}
+
+.manual-content {
+  min-width: 0;
+}
+
+.manual-section {
+  padding-bottom: 22px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--tidalis-border);
+  scroll-margin-top: calc(var(--tidalis-navbar-height) + 16px);
+
+  &:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  h2 {
+    margin: 0 0 10px;
+    font-size: 1.15rem;
+    color: var(--tidalis-blue-dark);
+  }
+
+  h3 {
+    margin: 18px 0 6px;
+    font-size: 0.95rem;
+  }
+
+  p {
+    margin: 0 0 10px;
+    line-height: 1.55;
+  }
+
+  a {
+    color: var(--tidalis-blue-dark);
+  }
+}
+
+.manual-list {
+  margin: 0 0 10px;
+  padding-left: 20px;
+  line-height: 1.6;
+
+  li {
+    margin-bottom: 4px;
+  }
+}
+
+@media (max-width: 800px) {
+  .manual-body {
+    grid-template-columns: 1fr;
+  }
+
+  .manual-toc {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}

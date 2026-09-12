@@ -1,0 +1,193 @@
+/* ------------------------------------------------------------------------------------
+ * Re-tints the Angular Material prebuilt (M3) theme with the Tidalis palette and swaps
+ * the Roboto typeface for Nunito.
+ *
+ * Angular Material 19 exposes its theme as `--mat-sys-*` CSS custom properties, so the
+ * whole theme can be re-coloured by redefining those tokens instead of recompiling a
+ * Sass theme. `styles.scss` loads the prebuilt `azure-blue` theme first (see
+ * angular.json) and this file wins because it comes later in the cascade.
+ * ---------------------------------------------------------------------------------- */
+
+$typography-roles: 'display-large', 'display-medium', 'display-small', 'headline-large',
+  'headline-medium', 'headline-small', 'title-large', 'title-medium', 'title-small',
+  'body-large', 'body-medium', 'body-small', 'label-large', 'label-medium', 'label-small';
+
+html {
+  color-scheme: light;
+
+  /* --- Colour roles ------------------------------------------------------------- */
+  --mat-sys-primary: #0f4361;
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-primary-container: #e8f0fb;
+  --mat-sys-on-primary-container: #093a7a;
+  --mat-sys-inverse-primary: #a9c7ff;
+  --mat-sys-primary-fixed: #e8f0fb;
+  --mat-sys-primary-fixed-dim: #cfe0f7;
+  --mat-sys-on-primary-fixed: #002a5c;
+  --mat-sys-on-primary-fixed-variant: #093a7a;
+
+  --mat-sys-secondary: #4a5568;
+  --mat-sys-on-secondary: #ffffff;
+  --mat-sys-secondary-container: #eef2f9;
+  --mat-sys-on-secondary-container: #333333;
+
+  /* Material's "tertiary" role is used for accents -> Tidalis orange. */
+  --mat-sys-tertiary: #ee964b;
+  --mat-sys-on-tertiary: #ffffff;
+  --mat-sys-tertiary-container: #fdeadb;
+  --mat-sys-on-tertiary-container: #7a3f0d;
+
+  --mat-sys-surface: #ffffff;
+  --mat-sys-surface-dim: #e6e9f0;
+  --mat-sys-surface-bright: #ffffff;
+  --mat-sys-surface-container: #f4f6fb;
+  --mat-sys-surface-container-low: #fafbfe;
+  --mat-sys-surface-container-lowest: #ffffff;
+  --mat-sys-surface-container-high: #eef2f9;
+  --mat-sys-surface-container-highest: #e6ebf5;
+  --mat-sys-surface-variant: #e6ebf5;
+  --mat-sys-on-surface: #333333;
+  --mat-sys-on-surface-variant: #6c757d;
+  --mat-sys-background: #f4f6fb;
+  --mat-sys-on-background: #333333;
+
+  --mat-sys-outline: #b6bdc7;
+  --mat-sys-outline-variant: #dee2e6;
+
+  --mat-sys-error: #b3261e;
+  --mat-sys-on-error: #ffffff;
+  --mat-sys-error-container: #f9dedc;
+  --mat-sys-on-error-container: #8c1d18;
+
+  /* --- Typography --------------------------------------------------------------- */
+  @each $role in $typography-roles {
+    --mat-sys-#{$role}-font: var(--tidalis-font);
+  }
+
+  /* The shorthand tokens bake the family into a single `font` value, so they have to be
+     restated. Sizes match Material's own scale, tightened a little for a dense tool. */
+  --mat-sys-display-large: 400 3.5rem / 4rem var(--tidalis-font);
+  --mat-sys-display-medium: 400 2.8rem / 3.25rem var(--tidalis-font);
+  --mat-sys-display-small: 400 2.25rem / 2.75rem var(--tidalis-font);
+  --mat-sys-headline-large: 600 2rem / 2.5rem var(--tidalis-font);
+  --mat-sys-headline-medium: 600 1.75rem / 2.25rem var(--tidalis-font);
+  --mat-sys-headline-small: 600 1.5rem / 2rem var(--tidalis-font);
+  --mat-sys-title-large: 600 1.25rem / 1.75rem var(--tidalis-font);
+  --mat-sys-title-medium: 600 1rem / 1.5rem var(--tidalis-font);
+  --mat-sys-title-small: 600 0.875rem / 1.25rem var(--tidalis-font);
+  --mat-sys-body-large: 400 1rem / 1.5rem var(--tidalis-font);
+  --mat-sys-body-medium: 400 0.875rem / 1.25rem var(--tidalis-font);
+  --mat-sys-body-small: 400 0.75rem / 1rem var(--tidalis-font);
+  --mat-sys-label-large: 600 0.875rem / 1.25rem var(--tidalis-font);
+  --mat-sys-label-medium: 600 0.75rem / 1rem var(--tidalis-font);
+  --mat-sys-label-small: 600 0.6875rem / 1rem var(--tidalis-font);
+
+  /* --- Shape -------------------------------------------------------------------- */
+  --mat-sys-corner-extra-small: 4px;
+  --mat-sys-corner-small: 6px;
+  --mat-sys-corner-medium: 6px;
+  --mat-sys-corner-large: 8px;
+}
+
+/* Buttons: flat/raised primary buttons get the Tidalis blue, accent actions orange. */
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-unelevated-button.mat-primary,
+.mat-mdc-fab.mat-primary {
+  --mdc-filled-button-container-color: var(--tidalis-blue);
+  --mdc-protected-button-container-color: var(--tidalis-blue);
+  --mdc-filled-button-label-text-color: #ffffff;
+  --mdc-protected-button-label-text-color: #ffffff;
+}
+
+.tidalis-accent-button.mat-mdc-unelevated-button,
+.tidalis-accent-button.mat-mdc-raised-button {
+  --mdc-filled-button-container-color: var(--tidalis-orange);
+  --mdc-protected-button-container-color: var(--tidalis-orange);
+  --mdc-filled-button-label-text-color: #ffffff;
+  --mdc-protected-button-label-text-color: #ffffff;
+
+  &:hover {
+    --mdc-filled-button-container-color: var(--tidalis-orange-dark);
+    --mdc-protected-button-container-color: var(--tidalis-orange-dark);
+  }
+}
+
+/* Tabs: blue indicator + blue active label. */
+.mat-mdc-tab-group,
+.mat-mdc-tab-nav-bar {
+  --mdc-tab-indicator-active-indicator-color: var(--tidalis-blue);
+  --mat-tab-header-active-label-text-color: var(--tidalis-blue);
+  --mat-tab-header-active-focus-label-text-color: var(--tidalis-blue);
+  --mat-tab-header-active-hover-label-text-color: var(--tidalis-blue-dark);
+  --mat-tab-header-active-ripple-color: var(--tidalis-blue-light);
+  --mat-tab-header-inactive-ripple-color: var(--tidalis-blue-light);
+  --mat-tab-header-label-text-weight: 600;
+}
+
+/* Compact form fields — this tool has a lot of them. */
+.mat-mdc-form-field {
+  --mat-form-field-container-height: 46px;
+  --mat-form-field-container-vertical-padding: 10px;
+  --mat-form-field-filled-with-label-container-padding-top: 22px;
+  --mat-form-field-filled-with-label-container-padding-bottom: 6px;
+  width: 100%;
+}
+
+.mat-mdc-form-field-subscript-wrapper {
+  /* Keep the hint/error line from adding a full row of empty space everywhere. */
+  min-height: 16px;
+}
+
+/* Checkboxes / radios / slide toggles in Tidalis blue. */
+.mat-mdc-checkbox {
+  --mdc-checkbox-selected-icon-color: var(--tidalis-blue);
+  --mdc-checkbox-selected-hover-icon-color: var(--tidalis-blue-dark);
+  --mdc-checkbox-selected-focus-icon-color: var(--tidalis-blue);
+  --mdc-checkbox-selected-pressed-icon-color: var(--tidalis-blue-dark);
+  --mdc-checkbox-selected-checkmark-color: #ffffff;
+}
+
+/* Datepicker header + selected day. */
+.mat-datepicker-content {
+  --mat-datepicker-calendar-date-selected-state-background-color: var(--tidalis-blue);
+  --mat-datepicker-calendar-date-selected-state-text-color: #ffffff;
+  --mat-datepicker-calendar-date-today-outline-color: var(--tidalis-orange);
+  --mat-datepicker-toggle-active-state-icon-color: var(--tidalis-blue);
+}
+
+/* Menus / selects / autocomplete panels. */
+.mat-mdc-menu-panel,
+.mat-mdc-select-panel,
+.mat-mdc-autocomplete-panel {
+  --mat-menu-item-label-text-font: var(--tidalis-font);
+  border-radius: var(--tidalis-radius);
+}
+
+.mat-mdc-option.mdc-list-item--selected:not(.mat-mdc-option-multiple) {
+  background: var(--tidalis-blue-light);
+}
+
+/* Paginator + table typography. */
+.mat-mdc-paginator {
+  --mat-paginator-container-background-color: transparent;
+  --mat-paginator-container-text-font: var(--tidalis-font);
+  --mat-paginator-container-text-size: 0.8125rem;
+}
+
+/* Dialogs. */
+.mat-mdc-dialog-container {
+  --mdc-dialog-container-shape: var(--tidalis-radius);
+  --mdc-dialog-subhead-font: var(--tidalis-font);
+  --mdc-dialog-supporting-text-font: var(--tidalis-font);
+}
+
+/* Snackbar. */
+.tidalis-snackbar-error {
+  --mdc-snackbar-container-color: #b3261e;
+  --mat-snack-bar-button-color: #ffffff;
+}
+
+.tidalis-snackbar-success {
+  --mdc-snackbar-container-color: var(--tidalis-blue-dark);
+  --mat-snack-bar-button-color: #ffffff;
+}

@@ -1,0 +1,29 @@
+<section class="start">
+  <header class="start__intro">
+    <h1 class="start__title">Tidalis Project References</h1>
+    <p class="start__subtitle">Where would you like to start?</p>
+  </header>
+
+  <div class="start__tiles">
+    @for (tile of tiles; track tile.link) {
+      <mat-card
+        class="tidalis-card start__tile"
+        [routerLink]="tile.external ? null : tile.link"
+        (click)="tile.external && openExternal(tile.link)"
+        (keydown.enter)="tile.external && openExternal(tile.link)"
+        [attr.role]="tile.external ? 'link' : null"
+        tabindex="0"
+      >
+        <div class="start__tile-icon">
+          <mat-icon>{{ tile.icon }}</mat-icon>
+        </div>
+        <h2 class="start__tile-title">{{ tile.title }}</h2>
+        <p class="start__tile-text">{{ tile.description }}</p>
+        <span class="start__tile-cta">
+          {{ tile.cta }}
+          <mat-icon>{{ tile.external ? 'open_in_new' : 'arrow_forward' }}</mat-icon>
+        </span>
+      </mat-card>
+    }
+  </div>
+</section>

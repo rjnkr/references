@@ -1,0 +1,156 @@
+:host {
+  display: block;
+}
+
+.audit-card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* -------------------------------------------------------------------------- heading */
+
+.audit-heading {
+  min-width: 220px;
+}
+
+.audit-heading__icon {
+  vertical-align: -6px;
+  margin-right: 4px;
+  color: var(--tidalis-blue);
+}
+
+/* --------------------------------------------------------------------------- toolbar */
+
+.audit-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.audit-search {
+  width: 260px;
+}
+
+.audit-action-filter {
+  width: 160px;
+}
+
+// `subscriptSizing="dynamic"` still leaves a ~16px sliver reserved for hint/error text
+// even with none shown, so the field's own bounding box no longer matches its visible
+// outlined box — throwing off `align-items: center` against the button-toggle-groups
+// next to it in the toolbar. Neither field ever shows a hint or a validation error, so
+// that reserved space can just be removed outright.
+.audit-search,
+.audit-action-filter {
+  ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+    display: none;
+  }
+}
+
+.audit-progress {
+  --mdc-linear-progress-active-indicator-color: var(--tidalis-orange);
+  height: 3px;
+}
+
+.audit-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: #fdeadb;
+  color: #8a4a12;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--tidalis-border);
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.audit-scope-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--tidalis-blue-light);
+  color: var(--tidalis-blue-dark);
+  font-size: 0.8125rem;
+  border-bottom: 1px solid var(--tidalis-border);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  button {
+    margin-left: auto;
+  }
+}
+
+/* ------------------------------------------------------------------------------ table */
+
+.audit-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.audit-table-scroll {
+  max-height: calc(100vh - var(--tidalis-navbar-height) - var(--tidalis-footer-height) - 260px);
+  overflow-y: auto;
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 10px 14px;
+    background: var(--tidalis-header-bg);
+    border-bottom: 1px solid var(--tidalis-border);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--tidalis-blue-dark);
+    white-space: nowrap;
+    text-align: left;
+  }
+
+  td {
+    padding: 8px 14px;
+    border-bottom: 1px solid #edf0f4;
+    vertical-align: middle;
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+
+  tbody tr {
+    cursor: pointer;
+  }
+
+  tbody tr:hover td {
+    background: var(--tidalis-blue-light);
+  }
+}
+
+.audit-table__nowrap {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.audit-table__changed {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

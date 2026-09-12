@@ -1,0 +1,19 @@
+/// Join table: the tags attached to a system.
+model SystemTagAssignment {
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  id       Int @id @default(autoincrement())
+  /// @DtoRelationIncludeId
+  systemId Int
+  /// @DtoRelationIncludeId
+  tagId    Int
+
+  /// @DtoReadOnly
+  system System @relation(fields: [systemId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  /// @DtoReadOnly
+  tag    Tag    @relation(fields: [tagId], references: [id], onUpdate: Cascade)
+
+  @@unique([systemId, tagId])
+  @@index([tagId])
+  @@map("system_tag_assignments")
+}

@@ -1,0 +1,247 @@
+/* ====================================================================================
+ * Tidalis Project References — global stylesheet
+ *
+ * Load order matters:
+ *   1. Angular Material prebuilt theme  (wired in angular.json, loaded before this file)
+ *   2. Bootstrap 5                      (below — layout utilities & grid)
+ *   3. Tidalis design tokens            (below)
+ *   4. Tidalis Material re-theme         (below)
+ *   5. Tidalis component classes         (below)
+ * ================================================================================== */
+
+@use 'bootstrap/scss/bootstrap' as bootstrap;
+@use 'styles/tokens';
+@use 'styles/material-tidalis';
+
+/* ------------------------------------------------------------------------------------
+ * Base
+ * ---------------------------------------------------------------------------------- */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  /* Bootstrap 5.3 drives the body font through CSS variables, so overriding these keeps
+     Bootstrap components on Nunito too. */
+  --bs-body-font-family: var(--tidalis-font);
+  --bs-body-font-size: 14px;
+  --bs-body-color: var(--tidalis-text);
+  --bs-body-bg: var(--tidalis-bg);
+  --bs-primary: var(--tidalis-blue);
+  --bs-link-color: var(--tidalis-blue);
+  --bs-link-hover-color: var(--tidalis-blue-dark);
+  --bs-border-color: var(--tidalis-border);
+
+  font-family: var(--tidalis-font);
+  font-size: 14px;
+  color: var(--tidalis-text);
+  background-color: var(--tidalis-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (min-width: 768px) {
+  body {
+    --bs-body-font-size: 15px;
+    font-size: 15px;
+  }
+}
+
+a {
+  color: var(--tidalis-blue);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--tidalis-blue-dark);
+    text-decoration: underline;
+  }
+}
+
+/* ------------------------------------------------------------------------------------
+ * Shell
+ * ---------------------------------------------------------------------------------- */
+
+.tidalis-content {
+  min-height: calc(100vh - var(--tidalis-navbar-height) - var(--tidalis-footer-height));
+  padding: 20px 24px 28px;
+}
+
+@media (max-width: 767.98px) {
+  .tidalis-content {
+    padding: 14px 12px 20px;
+  }
+}
+
+/* ------------------------------------------------------------------------------------
+ * Card pattern
+ * ---------------------------------------------------------------------------------- */
+
+.tidalis-card {
+  background: var(--tidalis-card-bg);
+  border: 1px solid var(--tidalis-border);
+  border-radius: var(--tidalis-radius);
+  box-shadow: var(--tidalis-shadow);
+  overflow: hidden;
+}
+
+.tidalis-card-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--tidalis-header-bg);
+  border-bottom: 1px solid var(--tidalis-border);
+
+  h1,
+  h2,
+  h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--tidalis-blue-dark);
+    letter-spacing: 0.01em;
+  }
+
+  .tidalis-card-subtitle {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--tidalis-muted);
+  }
+}
+
+.tidalis-card-body {
+  padding: 16px;
+}
+
+.tidalis-card-body--flush {
+  padding: 0;
+}
+
+/* ------------------------------------------------------------------------------------
+ * Small shared bits
+ * ---------------------------------------------------------------------------------- */
+
+.tidalis-section-title {
+  margin: 0 0 10px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--tidalis-muted);
+}
+
+.tidalis-muted {
+  color: var(--tidalis-muted);
+}
+
+.tidalis-empty {
+  padding: 18px;
+  text-align: center;
+  color: var(--tidalis-muted);
+  font-style: italic;
+}
+
+.tidalis-chip {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.tidalis-chip--blue {
+  background: var(--tidalis-blue-light);
+  color: var(--tidalis-blue-dark);
+}
+
+.tidalis-chip--orange {
+  background: #fdeadb;
+  color: var(--tidalis-orange-dark);
+}
+
+.tidalis-chip--grey {
+  background: #eceef1;
+  color: var(--tidalis-muted);
+}
+
+.tidalis-chip--green {
+  background: #e3f3e7;
+  color: #276b39;
+}
+
+.tidalis-chip--red {
+  background: #fbe4e2;
+  color: #a3221b;
+}
+
+/* Tags lookup — colours come from the Tag row itself (backgroundColor/textColor), set as
+ * inline styles wherever this class is used (grid cells, the project/system chip rows). */
+.tidalis-tag-chip {
+  display: inline-block;
+  padding: 1px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+/* Account dropdown card — lives in an overlay, so it needs global styles. */
+.tidalis-user-card {
+  padding: 10px 16px 8px;
+  min-width: 200px;
+
+  &__name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--tidalis-text);
+  }
+
+  &__email {
+    font-size: 0.75rem;
+    color: var(--tidalis-muted);
+    word-break: break-all;
+  }
+}
+
+/* World-map click-to-detail overlay. The reused system detail panel brings its own
+   header/tabs/footer, so the dialog surface must not add padding of its own. */
+.map-system-dialog .mat-mdc-dialog-surface {
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--tidalis-radius);
+  border-top: 3px solid var(--tidalis-blue);
+}
+
+/* Utility: horizontal scroller for wide content (tables, etc.). */
+.tidalis-scroll-x {
+  overflow-x: auto;
+}
+
+/* Thin, unobtrusive scrollbars for the data-dense areas. */
+.tidalis-scroll-x,
+.tidalis-panel-scroll {
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #c7cfdb;
+    border-radius: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}

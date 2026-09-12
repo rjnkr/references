@@ -1,0 +1,92 @@
+.login-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(
+    100vh - var(--tidalis-navbar-height) - var(--tidalis-footer-height) - 60px
+  );
+  padding: 24px 12px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--tidalis-shadow-lg);
+
+  &__banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--tidalis-blue) 0%, var(--tidalis-blue-dark) 100%);
+    color: #fff;
+
+    &__mark {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      flex: 0 0 auto;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.88);
+
+      img {
+        display: block;
+        width: 26px;
+        height: 26px;
+      }
+    }
+  }
+
+  &__brand {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+  }
+
+  &__product {
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  &__body {
+    padding: 24px 22px 26px;
+    text-align: center;
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--tidalis-text);
+    }
+
+    p {
+      font-size: 0.85rem;
+      margin: 0 0 18px;
+    }
+  }
+
+  &__button {
+    width: 100%;
+    height: 44px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  &__spinner {
+    display: inline-block;
+    margin-right: 8px;
+    vertical-align: middle;
+    --mdc-circular-progress-active-indicator-color: #fff;
+  }
+
+  &__hint {
+    margin: 16px 0 0 !important;
+    font-size: 0.75rem !important;
+  }
+}

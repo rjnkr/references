@@ -1,0 +1,20 @@
+/// Lookup table of currencies (ISO 4217). Seeded, admin-manageable.
+model Currency {
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  id     Int     @id @default(autoincrement())
+  /// ISO 4217 alphabetic code, e.g. "EUR"
+  /// @minLength 3
+  /// @maxLength 3
+  code   String  @unique @db.VarChar(3)
+  /// @maxLength 100
+  name   String  @db.VarChar(100)
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  /// @maxLength 8
+  symbol String? @db.VarChar(8)
+
+  projects Project[]
+
+  @@map("currencies")
+}

@@ -1,0 +1,133 @@
+:host {
+  display: block;
+}
+
+.ref-landing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  padding: 28px 0;
+}
+
+/* ----------------------------------------------------------------------------- intro */
+
+.ref-landing__intro {
+  text-align: center;
+  max-width: 560px;
+}
+
+.ref-landing__title {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--tidalis-blue-dark);
+}
+
+.ref-landing__subtitle {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  color: var(--tidalis-muted);
+}
+
+/* ----------------------------------------------------------------------------- tiles */
+
+.ref-landing__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  width: 100%;
+  max-width: 900px;
+}
+
+.ref-landing__tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 22px 20px 20px;
+  cursor: pointer;
+  text-align: left;
+  background: var(--tidalis-card-bg);
+  border-radius: var(--tidalis-radius);
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    border-color 140ms ease;
+
+  &:hover,
+  &:focus-visible {
+    transform: translateY(-3px);
+    border-color: var(--tidalis-blue);
+    box-shadow: var(--tidalis-shadow-lg);
+    outline: none;
+  }
+
+  &:active {
+    transform: translateY(-1px);
+  }
+}
+
+.ref-landing__tile-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 11px;
+  background: var(--tidalis-blue-light);
+  color: var(--tidalis-blue);
+
+  mat-icon {
+    font-size: 26px;
+    width: 26px;
+    height: 26px;
+  }
+}
+
+.ref-landing__tile-title {
+  margin: 4px 0 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--tidalis-text);
+}
+
+.ref-landing__tile-text {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--tidalis-muted);
+}
+
+.ref-landing__tile-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--tidalis-blue);
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    transition: transform 140ms ease;
+  }
+}
+
+.ref-landing__tile:hover .ref-landing__tile-cta mat-icon {
+  transform: translateX(3px);
+}
+
+@media (max-width: 767.98px) {
+  .ref-landing__tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ref-landing__title {
+    font-size: 1.3rem;
+  }
+}

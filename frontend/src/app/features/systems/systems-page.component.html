@@ -1,0 +1,150 @@
+<mat-sidenav-container class="systems-shell" [hasBackdrop]="true">
+  <!-- Slide-in detail panel (opens on row click / "New System"). -->
+  <mat-sidenav
+    class="systems-panel"
+    position="end"
+    mode="over"
+    [autoFocus]="false"
+    [opened]="panel() !== null"
+    (openedChange)="onSidenavOpenedChange($event)"
+  >
+    @if (panel(); as state) {
+      <app-system-detail-panel
+        [state]="state"
+        (closed)="closePanel()"
+        (saved)="onPanelSaved($event)"
+        (deleteRequested)="confirmDelete($event)"
+        (documentsChanged)="load()"
+      />
+    }
+  </mat-sidenav>
+
+  <mat-sidenav-content class="systems-content">
+    <section class="tidalis-card systems-card">
+      <!-- ------------------------------------------------------------------ toolbar -->
+      <div class="tidalis-card-header">
+        <div class="systems-heading">
+          <h1>Systems</h1>
+          <div class="tidalis-card-subtitle">
+            @if (loading()) {
+              Loading…
+            } @else if (hasColumnFilters()) {
+              {{ displayedRowCount() }} of {{ rows().length }} shown on this page ·
+              {{ total() }} matching in total
+            } @else {
+              {{ total() }} {{ total() === 1 ? 'system' : 'systems' }}
+            }
+          </div>
+        </div>
+
+        <div class="systems-toolbar">
+          <button
+            mat-stroked-button
+            type="button"
+            [matMenuTriggerFor]="columnsMenu"
+            matTooltip="Show or hide columns"
+          >
+            <mat-icon>view_column</mat-icon>
+            <span class="d-none d-md-inline">Columns</span>
+          </button>
+
+          <button
+            mat-stroked-button
+            type="button"
+            [disabled]="!hasColumnFilters()"
+            (click)="clearFilters()"
+            matTooltip="Clear column filters"
+          >
+            <mat-icon>filter_alt_off</mat-icon>
+            <span class="d-none d-lg-inline">Clear filters</span>
+          </button>
+
+          <button
+            mat-icon-button
+            type="button"
+            (click)="load()"
+            matTooltip="Reload"
+            aria-label="Reload"
+          >
+            <mat-icon>refresh</mat-icon>
+          </button>
+
+          <button mat-flat-button color="primary" type="button" (click)="newSystem()">
+            <mat-icon>add</mat-icon>
+            <span>New System</span>
+          </button>
+        </div>
+      </div>
+
+      <mat-menu #columnsMenu="matMenu" class="columns-menu">
+        <div class="columns-menu__header" (click)="$event.stopPropagation()">
+          <span>Visible columns</span>
+          <button mat-button type="button" (click)="resetColumns()">Reset</button>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="columns-menu__list" (click)="$event.stopPropagation()">
+          @for (column of toggleableColumns; track column.colId) {
+            <mat-checkbox
+              [checked]="isColumnVisible(column.colId)"
+              (change)="toggleColumn(column.colId, $event.checked)"
+            >
+              {{ column.label }}
+            </mat-checkbox>
+          }
+        </div>
+      </mat-menu>
+
+      @if (loading()) {
+        <mat-progress-bar mode="indeterminate" class="systems-progress"></mat-progress-bar>
+      }
+
+      @if (loadError()) {
+        <div class="systems-error">
+          <mat-icon>cloud_off</mat-icon>
+          <span>{{ loadError() }}</span>
+          <button mat-button type="button" (click)="load()">Retry</button>
+        </div>
+      }
+
+      <!-- --------------------------------------------------------------------- grid -->
+      <div class="tidalis-card-body tidalis-card-body--flush systems-body">
+        <div class="systems-grid">
+          @if (!loading() && rows().length === 0) {
+            <div class="systems-empty">
+              No systems recorded yet — use “New System” to add the first one.
+            </div>
+          } @else {
+            <ag-grid-angular
+              class="systems-ag-grid"
+              [theme]="gridTheme"
+              [columnDefs]="columnDefs"
+              [defaultColDef]="defaultColDef"
+              [rowData]="rows()"
+              [context]="gridContext"
+              [getRowId]="getRowId"
+              [getRowClass]="getRowClass"
+              [suppressCellFocus]="true"
+              [animateRows]="false"
+              (gridReady)="onGridReady($event)"
+              (sortChanged)="onGridSortChanged($event)"
+              (modelUpdated)="onGridModelUpdated($event)"
+              (filterChanged)="onGridFilterChanged($event)"
+              (rowClicked)="onRowClicked($event)"
+              (columnMoved)="onGridColumnMoved($event)"
+              (columnResized)="onGridColumnResized($event)"
+            ></ag-grid-angular>
+          }
+        </div>
+
+        <mat-paginator
+          [length]="total()"
+          [pageIndex]="pageIndex()"
+          [pageSize]="pageSize()"
+          [pageSizeOptions]="pageSizeOptions"
+          showFirstLastButtons
+          (page)="onPage($event)"
+        ></mat-paginator>
+      </div>
+    </section>
+  </mat-sidenav-content>
+</mat-sidenav-container>

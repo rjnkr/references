@@ -1,0 +1,17 @@
+/// Lookup table of countries (ISO 3166-1). Seeded, admin-manageable.
+model Country {
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  id      Int    @id @default(autoincrement())
+  /// ISO 3166-1 alpha-2 code, e.g. "NL"
+  /// @minLength 2
+  /// @maxLength 2
+  isoCode String @unique @db.VarChar(2)
+  /// @maxLength 100
+  name    String @unique @db.VarChar(100)
+
+  unLocodes UnLocode[]
+  systems   System[]
+
+  @@map("countries")
+}

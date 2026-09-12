@@ -1,0 +1,262 @@
+<section class="tidalis-card manual-card">
+  <div class="tidalis-card-header">
+    <div class="manual-heading">
+      <h1><mat-icon class="manual-heading__icon">menu_book</mat-icon> User Manual</h1>
+      <div class="tidalis-card-subtitle">
+        How to use the Tidalis Project References tool — systems, projects, the world map
+        and the reference data behind them.
+      </div>
+    </div>
+  </div>
+
+  <div class="tidalis-card-body manual-body">
+    <nav class="manual-toc" aria-label="On this page">
+      <div class="manual-toc__title">On this page</div>
+      @for (section of sections; track section.id) {
+        <a class="manual-toc__link" routerLink="." [fragment]="section.id">
+          <mat-icon>{{ section.icon }}</mat-icon>
+          <span>{{ section.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <div class="manual-content">
+      <!-- ============================================================== Overview -->
+      <section id="overview" class="manual-section">
+        <h2>Overview</h2>
+        <p>
+          This tool tracks the systems Tidalis has delivered — Maritime Control, Port Control and
+          similar installations — so they can be reused as sales references, and the
+          commercial <strong>projects</strong> (deals) behind them.
+        </p>
+        <p>
+          A <strong>System</strong> is the thing that was actually built and delivered: its
+          scope, location, modules, contacts and documents. A <strong>Project</strong> is a
+          commercial record that points back to the System it belongs to. One system can have
+          several projects linked to  it (an initial implementation plus later maintenance renewals, for example).
+          In case a support & maintenance contract is renewed, a new project shall be created to reflect the updated information.
+        </p>
+        <p>
+          Both live in sortable, filterable grids with a slide-over detail panel for viewing
+          and editing. Everything you see is also plotted on the
+          <a routerLink="." fragment="world-map">World Map</a>, and every change is
+          recorded in the <a routerLink="." fragment="audit-trail">Audit Trail</a>.
+        </p>
+      </section>
+
+      <!-- =============================================================== Systems -->
+      <section id="systems" class="manual-section">
+        <h2>Systems</h2>
+        <p>
+          <strong>Systems</strong> in the top navigation opens the systems grid. Use the
+          floating filter row under each column header to search, and click a column header
+          to sort (columns without a sort arrow are derived/summary columns and can't be
+          sorted). The <strong>Columns</strong> button lets you show or hide optional
+          columns — your choice, along with column order and width, is remembered in this
+          browser. Inside that same menu, <strong>Reset</strong> puts every column back to
+          its shipped default — visible or hidden, order and width — and forgets whatever
+          was remembered, in case things get into a state you no longer want.
+        </p>
+        <p>
+          Click any row to open it read-only in the detail panel on the right; click
+          <strong>Edit</strong> there to make changes, or use <strong>New System</strong>
+          above the grid to create one. A tab with an invalid or missing required field
+          shows a small red dot on its label so you can find it quickly.
+        </p>
+
+        <h3>Detail panel tabs</h3>
+        <ul class="manual-list">
+          <li><strong>General</strong> — name, UN/LOCODE, type, country, tags.</li>
+          <li><strong>Scope &amp; Description</strong> — scope, products and description text.</li>
+          <li><strong>Ports &amp; Locations</strong> — every UN/LOCODE port the system serves besides its own location.</li>
+          <li><strong>Modules &amp; Subsystems</strong> — the named modules delivered (see below) and free-text subsystems/interfaces.</li>
+          <li><strong>People &amp; Contacts</strong> — point of contact details and the people involved.</li>
+          <li><strong>URLs</strong> — links (e.g. product pages, documentation) grouped by type.</li>
+          <li><strong>Documents</strong> — files attached to the system, available once it's been saved once.</li>
+        </ul>
+
+        <h3>Picking the country from a UN/LOCODE</h3>
+        <p>
+          Picking a UN/LOCODE in the General tab fills the Country field in automatically
+          from that location's own country. Country stays a normal, editable field — pick a
+          different one yourself if the system's country genuinely differs from where it's
+          installed.
+        </p>
+
+        <h3>Modules</h3>
+        <p>
+          Modules are picked from the shared list managed under
+          <a routerLink="." fragment="reference-data">Reference Data</a>, not typed freely.
+          A system must have at least one module.
+        </p>
+        <p>
+          When nothing is selected yet, a dropdown with checkboxes is shown directly so you
+          can pick right away. Once at least one module is selected, the field collapses to
+          a plain alphabetical list — much easier to scan than a long comma-separated line
+          once a system carries ten or more modules — with a small pencil button next to it.
+          Click the pencil to reopen the picker and change the selection; it collapses back
+          to the list once you click away. The grid's own <strong>Modules</strong> column
+          (opt-in via <strong>Columns</strong>) shows the same alphabetical list, growing the
+          row's height to fit however many are assigned.
+        </p>
+
+        <h3>Showing or hiding a system on the World Map</h3>
+        <p>
+          The pinned <strong>Map</strong> column on the far left of the grid is a per-user
+          preference, not a shared setting — checking or unchecking a row's box shows or
+          hides that one system on <em>your</em> World Map, in this browser, right away. It
+          has no effect on what colleagues see, and doesn't need saving.
+        </p>
+        <p>
+          The checkbox in that column's header is a bulk "select all" — it shows or hides
+          every row currently passing your grid filters in one click. It's tri-state: ticked
+          means every filtered row is shown, empty means every filtered row is hidden, and a
+          dash means it's a mix. Filter the grid down first (e.g. to one country or product
+          line) if you only want to bulk-toggle a subset rather than everything.
+        </p>
+        <p>
+          This selection is entirely separate from the grid's own filters, so it's worth
+          remembering: a system left checked stays on your World Map even while a search or
+          column filter is currently hiding its row from the grid. Filtering only changes
+          what the grid displays right now — it never changes what's checked. Clear your
+          filters if a system seems to be missing from the grid but you know it's still
+          plotted on the map.
+        </p>
+      </section>
+
+      <!-- ============================================================== Projects -->
+      <section id="projects" class="manual-section">
+        <h2>Projects</h2>
+        <p>
+          <strong>Projects</strong> works the same way as the Systems grid — floating
+          filters, sortable columns, a Columns menu, click a row to view it, Edit to change
+          it. Every project links back to exactly one System, shown by name in the grid's
+          <strong>System</strong> column and in the detail panel title.
+        </p>
+
+        <h3>Detail panel tabs</h3>
+        <ul class="manual-list">
+          <li>
+            <strong>General</strong> — project number, the linked System (type a few letters
+            of its name to search and pick it — the same live lookup used for a system's own
+            UN/LOCODE), award/completion dates, implementation and maintenance pricing,
+            currency, project type, tags and the Pipedrive deal number.
+          </li>
+          <li>
+            <strong>Notes</strong> — free text, in this order: <strong>Implementation
+            details</strong> first, <strong>New developments</strong> below it.
+          </li>
+          <li><strong>URLs</strong> — links grouped by type, same as on a System.</li>
+          <li><strong>Documents</strong> — files attached to the project, available once it's been saved once.</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================= World Map -->
+      <section id="world-map" class="manual-section">
+        <h2>World Map</h2>
+        <p>
+          Plots every system on a real nautical base map (water and coastline only — no
+          navigational chart data), so it stays fast and uncluttered at a glance.
+        </p>
+        <ul class="manual-list">
+          <li>
+            <strong>Theme</strong> — the sun/moon button in the map's corner switches
+            between a light and dark base map. Dark is the default.
+          </li>
+          <li>
+            <strong>Colour theme</strong> — the palette button next to it lets you pick
+            which named base-map style is used for light mode and which is used for dark
+            mode, independently (e.g. ECDIS Day, ECDIS Night, Dark Modern). The list is
+            read live from the tile server, so a style added there shows up here too, with
+            no update needed. Your choice is remembered in this browser only.
+          </li>
+          <li>
+            <strong>Green markers</strong> mark a system's own location; a number inside a
+            marker means several systems sit at the same spot — hover to fan them out into
+            individual, clickable dots.
+          </li>
+          <li>
+            <strong>Show ports</strong> — the locations toggle additionally plots every port
+            a system references, in a cream colour. Once shown, a system's own green marker
+            gives way to its port marker(s) wherever it has any, so the same system is never
+            shown twice at the same place; a system with no ports of its own keeps its
+            marker, just recoloured to match the port layer.
+          </li>
+          <li>
+            Click any single marker to open that system directly; click a cluster's fanned-
+            out dot the same way.
+          </li>
+          <li>
+            <strong>Full screen</strong> — the expand button hides the navbar, footer and
+            page padding so only the map itself fills the screen: handy for a clean
+            screenshot to drop into a presentation or document. A small close button sits
+            bottom-centre to leave it again (or press Esc).
+          </li>
+          <li>
+            What you see here follows the <strong>Map</strong> column choices made in the
+            <a routerLink="." fragment="systems">Systems</a> grid, for your browser only.
+          </li>
+        </ul>
+      </section>
+
+      <!-- ========================================================= Reference Data -->
+      <section id="reference-data" class="manual-section">
+        <h2>Reference Data</h2>
+        <p>
+          <strong>Reference Data</strong> manages the shared lookup tables that back
+          dropdowns and tags everywhere else in the app. Open a tile to add, rename or
+          delete an entry — a value still referenced by a system or project can't be
+          deleted until nothing uses it any more.
+        </p>
+        <ul class="manual-list">
+          <li><strong>Countries</strong> and <strong>Currencies</strong> — standard reference lists.</li>
+          <li><strong>UN/LOCODEs</strong> — ports and locations, each with coordinates, used for a system's own location and for its ports.</li>
+          <li><strong>Modules</strong> — the named modules a system can be built from (see <a routerLink="." fragment="systems">Systems</a>).</li>
+          <li><strong>Tags</strong> — coloured labels usable on both systems and projects.</li>
+          <li><strong>Document Types</strong> and <strong>URL Types</strong> — the categories offered when attaching a document or a link.</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================= Audit Trail -->
+      <section id="audit-trail" class="manual-section">
+        <h2>Audit Trail</h2>
+        <p>
+          <strong>Audit Trail</strong> lists every create, update and delete, for either
+          Systems or Projects (Systems by default) — switch between the two with the toggle
+          at the top. Open an entry to see exactly which fields changed and their
+          before/after values.
+        </p>
+        <p>
+          Timestamps show in your own browser's local time by default; use the
+          <strong>Local / UTC</strong> toggle next to it if you'd rather compare entries in
+          UTC — colleagues in other timezones can do the same independently, since it's
+          remembered per browser, not shared.
+        </p>
+      </section>
+
+      <!-- ===================================================== Claude Integration -->
+      <section id="claude-integration" class="manual-section">
+        <h2>Connect Claude</h2>
+        <p>
+          <strong>Connect Claude</strong> exposes this data over MCP (Model Context
+          Protocol), so Claude Desktop, Claude Code or any other MCP-compatible client can
+          answer questions about systems, projects, ports and pricing directly — without
+          anyone copying data into a chat by hand. The page there walks through the
+          connection details step by step.
+        </p>
+      </section>
+
+      <!-- =================================================================== Tips -->
+      <section id="tips" class="manual-section">
+        <h2>Tips &amp; FAQ</h2>
+        <ul class="manual-list">
+          <li>Nothing is saved until you click <strong>Save</strong> — <strong>Cancel</strong> discards your edits and reverts to the last saved version.</li>
+          <li>A red dot on a tab label means a required field on that tab is missing or invalid.</li>
+          <li>Grid column order, visibility, width and your filters are remembered per browser, not shared with colleagues.</li>
+          <li>The Systems grid's Map column, the World Map's "show ports" toggle and the Audit Trail's Local/UTC timestamp choice are all per-browser preferences — they don't affect what anyone else sees.</li>
+          <li>Deleting a system or project removes it from the grid and the map immediately — if you delete one by mistake, contact an administrator right away rather than recreating it from scratch.</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+</section>

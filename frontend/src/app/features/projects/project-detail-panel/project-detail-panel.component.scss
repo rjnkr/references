@@ -1,0 +1,407 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--tidalis-card-bg);
+}
+
+/* --------------------------------------------------------------------------- header */
+
+.panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  background: var(--tidalis-header-bg);
+  border-bottom: 1px solid var(--tidalis-border);
+}
+
+.panel__titles {
+  min-width: 0;
+}
+
+.panel__eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--tidalis-muted);
+}
+
+.panel__title {
+  margin: 2px 0 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--tidalis-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panel__number {
+  color: var(--tidalis-blue-dark);
+}
+
+.panel__sep {
+  margin: 0 6px;
+  color: var(--tidalis-muted);
+}
+
+.panel__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.panel__delete {
+  color: #b3261e;
+  --mdc-outlined-button-label-text-color: #b3261e;
+  --mdc-outlined-button-outline-color: #e6b4b0;
+}
+
+.panel__progress {
+  height: 3px;
+  --mdc-linear-progress-active-indicator-color: var(--tidalis-orange);
+}
+
+.panel__tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--tidalis-border);
+}
+
+.panel__readonly-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  background: var(--tidalis-blue-light);
+  color: var(--tidalis-blue-dark);
+  font-size: 0.78rem;
+  border-bottom: 1px solid #d5e2f6;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+  }
+}
+
+/* ----------------------------------------------------------------------------- body */
+
+.panel__body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.tab-content {
+  padding: 18px 18px 28px;
+
+  /* When the tab content itself is a Bootstrap `.row`, its negative gutter margins
+     would push it wider than the tab body and produce a stray horizontal scrollbar. */
+  &.row {
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+/* Belt and braces: the tab body must never scroll sideways. */
+:host ::ng-deep .mat-mdc-tab-body-content {
+  overflow-x: hidden;
+}
+
+.panel__flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 6px 2px 2px;
+}
+
+.panel__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding-top: 10px;
+  font-size: 0.75rem;
+  color: var(--tidalis-muted);
+}
+
+/* ------------------------------------------------------------------------- form cards */
+
+/* Groups related fields within a tab — e.g. General / Financial / Completion Dates all
+   living together on one tab, each visually its own card rather than a single long form. */
+.form-card {
+  border: 1px solid var(--tidalis-border);
+  border-radius: var(--tidalis-radius);
+  background: var(--tidalis-card-bg);
+  padding: 16px;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .panel__meta {
+    padding-top: 14px;
+  }
+
+  mat-divider {
+    margin-top: 6px;
+  }
+}
+
+.form-card__title {
+  margin: 0 0 14px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--tidalis-blue-dark);
+}
+
+/* ----------------------------------------------------------------------- tab labels */
+
+.tab-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 7px;
+  border-radius: 50%;
+  background: #b3261e;
+}
+
+.tab-count {
+  display: inline-block;
+  min-width: 19px;
+  margin-left: 7px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--tidalis-blue-light);
+  color: var(--tidalis-blue-dark);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------------ repeatable rows */
+
+.repeat-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 6px 8px 0;
+  margin-bottom: 2px;
+  border-left: 3px solid var(--tidalis-blue-light);
+  border-radius: 3px;
+
+  &:hover {
+    background: #fafbfe;
+    border-left-color: var(--tidalis-orange);
+  }
+
+  &__main {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  &__remove {
+    flex: 0 0 auto;
+    margin-top: 4px;
+    color: #b3261e;
+
+    mat-icon {
+      font-size: 19px;
+      width: 19px;
+      height: 19px;
+    }
+  }
+}
+
+.add-button {
+  margin-top: 8px;
+  --mdc-outlined-button-label-text-color: var(--tidalis-blue);
+  --mdc-outlined-button-outline-color: #bcd0ec;
+}
+
+.section-divider {
+  margin: 22px 0 16px;
+}
+
+/* --------------------------------------------------------------------- scope helper */
+
+.word-counter {
+  font-variant-numeric: tabular-nums;
+
+  &--over {
+    color: var(--tidalis-orange-dark);
+    font-weight: 700;
+  }
+}
+
+.soft-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 12px;
+  margin-top: 4px;
+  margin-bottom: 6px;
+  border-radius: var(--tidalis-radius);
+  background: #fdeadb;
+  color: #8a4a12;
+  font-size: 0.78rem;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+  }
+}
+
+/* Same shape as `.soft-warning`, but green-themed - used above fields whose content is
+   meant to be shared externally, as opposed to `.soft-warning`'s internal-only notices.
+   Blue is avoided here since the panel header is already blue. */
+.share-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 9px 12px;
+  margin-bottom: 6px;
+  border-radius: var(--tidalis-radius);
+  background: #e3f3e6;
+  color: #2b6b3d;
+  font-size: 0.78rem;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+  }
+}
+
+/* ------------------------------------------------------------------------ documents */
+
+.doc-table-wrap {
+  border: 1px solid var(--tidalis-border);
+  border-radius: var(--tidalis-radius);
+}
+
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+
+  th {
+    padding: 8px 10px;
+    background: var(--tidalis-header-bg);
+    border-bottom: 1px solid var(--tidalis-border);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--tidalis-blue-dark);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #edf0f4;
+    vertical-align: middle;
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+
+  &__name {
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__actions .mat-mdc-icon-button {
+    width: 34px;
+    height: 34px;
+    padding: 5px;
+
+    mat-icon {
+      font-size: 19px;
+      width: 19px;
+      height: 19px;
+    }
+  }
+
+  &__delete {
+    color: #b3261e;
+  }
+}
+
+.upload-row {
+  margin-top: 4px;
+
+  &__button {
+    width: 100%;
+    height: 46px;
+  }
+}
+
+.file-picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+
+  &__name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.8125rem;
+    color: var(--tidalis-muted);
+  }
+}
+
+/* ------------------------------------------------------------------------- business */
+
+/* Shared by the Pipedrive URL and Project URL "open" links below their fields. */
+.external-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+
+  mat-icon {
+    font-size: 17px;
+    width: 17px;
+    height: 17px;
+  }
+}
+
+.tall-field textarea {
+  min-height: 130px;
+}

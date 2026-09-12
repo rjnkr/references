@@ -1,0 +1,42 @@
+/// UN/LOCODE port & location codes. Only a small starter set is seeded; the
+/// full UNECE dataset (100k+ rows) can be bulk-imported with
+/// `npm run import:unlocodes -- <csv-path>`.
+model UnLocode {
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  id        Int    @id @default(autoincrement())
+  /// UN/LOCODE, country code + location code without space, e.g. "NLRTM"
+  /// @minLength 5
+  /// @maxLength 5
+  code      String @unique @db.VarChar(5)
+  /// Location name, e.g. "Rotterdam"
+  /// @maxLength 150
+  name      String @db.VarChar(150)
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  /// @DtoRelationIncludeId
+  countryId Int?
+  /// WGS84 latitude in decimal degrees, -90..90. Optional: the full UNECE bulk
+  /// import does not always carry usable coordinates.
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  /// @minimum -90
+  /// @maximum 90
+  latitude  Float?
+  /// WGS84 longitude in decimal degrees, -180..180. Optional, see `latitude`.
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  /// @minimum -180
+  /// @maximum 180
+  longitude Float?
+
+  /// @DtoReadOnly
+  country     Country?     @relation(fields: [countryId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  systemPorts SystemPort[]
+  /// Systems installed at this location (see `System.systemUnlocodeId`).
+  systems     System[]
+
+  @@index([countryId])
+  @@index([name])
+  @@map("un_locodes")
+}

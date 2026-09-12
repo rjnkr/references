@@ -1,0 +1,24 @@
+<section class="ref-landing">
+  <header class="ref-landing__intro">
+    <h1 class="ref-landing__title">Reference Data</h1>
+    <p class="ref-landing__subtitle">
+      Manage the lookup tables.
+    </p>
+  </header>
+
+  <div class="ref-landing__tiles">
+    @for (tile of tiles; track tile.link) {
+      <mat-card class="tidalis-card ref-landing__tile" [routerLink]="tile.link" tabindex="0">
+        <div class="ref-landing__tile-icon">
+          <mat-icon>{{ tile.icon }}</mat-icon>
+        </div>
+        <h2 class="ref-landing__tile-title">{{ tile.title }}</h2>
+        <p class="ref-landing__tile-text">{{ tile.description }}</p>
+        <span class="ref-landing__tile-cta">
+          Manage
+          <mat-icon>arrow_forward</mat-icon>
+        </span>
+      </mat-card>
+    }
+  </div>
+</section>

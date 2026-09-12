@@ -1,0 +1,24 @@
+# compiled output
+/dist
+/node_modules
+*.tsbuildinfo
+
+# environment
+.env
+.env.local
+.env.*.local
+
+# auto-generated DTOs (regenerate with `npx prisma generate`)
+/src/generated
+
+# uploaded documents
+/storage
+
+# logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+.idea
+.vscode

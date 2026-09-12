@@ -1,0 +1,37 @@
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    /* `@angular-devkit/build-angular` pins rxjs to exactly 7.8.1, so npm materialises a
+       second copy at `frontend/node_modules/rxjs` inside this workspace. Everything under
+       `src/` would resolve that copy while the hoisted `@angular/*` packages resolve the
+       root `node_modules/rxjs`, and TypeScript then rejects every operator with
+       "Subscriber<T> is not a class derived from Subscriber<T>". Pointing rxjs at the
+       hoisted copy keeps one rxjs for both the type checker and the bundler. */
+    "paths": {
+      "rxjs": ["../node_modules/rxjs"],
+      "rxjs/*": ["../node_modules/rxjs/*"]
+    },
+    "outDir": "./dist/out-tsc",
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "bundler",
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "ES2022"
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
+  }
+}

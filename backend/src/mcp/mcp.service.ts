@@ -1,0 +1,543 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { Prisma, ProjectType } from '@prisma/client';
+import { z } from 'zod';
+import { DbService } from '../database/db-service/db.service';
+import { PROJECT_INCLUDE } from '../modules/projects/projects.service';
+import { SYSTEM_INCLUDE } from '../modules/systems/systems.service';
+
+const DEFAULT_LIMIT = 25;
+const MAX_LIMIT = 100;
+
+/**
+ * Thin pass-through wrapper around `McpServer.registerTool`, used at every
+ * call site in this file instead of calling the method directly.
+ *
+ * `registerTool`'s generic signature checks the tool config against the SDK's
+ * internal dual zod v3/v4 compatibility type (`AnySchema | ZodRawShapeCompat`
+ * in `@modelcontextprotocol/sdk`'s `zod-compat` module). In this SDK version
+ * (1.30.0) with zod 3.25.x, that check overflows TypeScript's type
+ * instantiation depth (TS2589) for any of our multi-field `inputSchema`
+ * objects - reproducible even with a plain `{ id: z.number().optional() }`
+ * once a couple more properties are added alongside it. This is an upstream
+ * limitation of the SDK's dual-compat generics, not a defect in our schemas:
+ * zod's actual runtime parsing/validation of tool arguments is entirely
+ * unaffected, only the static structural check on the config object is
+ * bypassed here. Revisit this if a future SDK release simplifies that typing.
+ */
+function registerMcpTool(
+  server: McpServer,
+  name: string,
+  config: { description: string; inputSchema?: z.ZodRawShape },
+  handler: (...args: never[]) => unknown,
+): void {
+  (server.registerTool as (...args: unknown[]) => unknown)(name, config, handler);
+}
+
+const PROJECT_TYPE_VALUES = ['PMIS', 'VTS', 'AIS', 'COASTAL', 'PILOT', 'OTHER'] as const;
+
+/**
+ * Tool input schemas declare `projectType` as a plain string, not
+ * `z.enum(PROJECT_TYPE_VALUES)`, and this function validates it at runtime
+ * instead. Putting the enum's literal-tuple type into a schema that flows
+ * through the MCP SDK's dual zod v3/v4 compat generics (`registerTool`)
+ * blows past TypeScript's instantiation-depth limit (TS2589) - reproducible
+ * with just `z.enum([...]).optional()` in an `inputSchema`. A plain string,
+ * validated here, sidesteps the compiler limit without weakening validation.
+ */
+function parseProjectType(value: string | undefined): ProjectType | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if ((PROJECT_TYPE_VALUES as readonly string[]).includes(value)) {
+    return value as ProjectType;
+  }
+  throw new Error(`Invalid projectType "${value}". Expected one of: ${PROJECT_TYPE_VALUES.join(', ')}`);
+}
+
+/**
+ * Named separately (rather than inlined into the `registerTool` call) so
+ * TypeScript resolves its type once here instead of re-deriving it inside
+ * `registerTool`'s generic signature.
+ */
+const listSystemsInputSchema = {
+  search: z.string().optional().describe('Free text matched against system name and products'),
+  projectType: z
+    .string()
+    .optional()
+    .describe(`Filter on the type of system. One of: ${PROJECT_TYPE_VALUES.join(', ')}`),
+  countryId: z.number().int().optional().describe('Country id, see list_countries'),
+  limit: z.number().int().min(1).max(MAX_LIMIT).optional(),
+} satisfies z.ZodRawShape;
+
+const listProjectsInputSchema = {
+  search: z.string().optional().describe('Free text matched against the project number and name'),
+  systemId: z.number().int().optional().describe('System id, see list_systems, to find its projects'),
+  limit: z.number().int().min(1).max(MAX_LIMIT).optional(),
+} satisfies z.ZodRawShape;
+
+/** Wraps a result as MCP tool output. JSON keeps it unambiguous for the model. */
+const asJson = (payload: unknown) => ({
+  content: [{ type: 'text' as const, text: JSON.stringify(payload, null, 2) }],
+});
+
+@Injectable()
+export class McpService {
+  private readonly logger = new Logger(McpService.name);
+
+  constructor(private readonly db: DbService) {}
+
+  /**
+   * A fresh McpServer per connection: an McpServer instance can only be bound
+   * to a single transport, and every SSE connection gets its own transport.
+   */
+  createServer(): McpServer {
+    const server = new McpServer(
+      { name: 'tidalis-project-references', version: '1.0.0' },
+      {
+        instructions:
+          'Read-only access to the Tidalis project reference database: delivered systems with ' +
+          'their scope, products, ports, sub-systems and people, plus the commercial projects ' +
+          '(deals) linked to them. Use search_reference_systems when looking for systems that ' +
+          'may be quoted to customers - it excludes sensitive systems and those the customer ' +
+          'has not approved as a reference.',
+      },
+    );
+
+    this.registerSystemTools(server);
+    this.registerProjectTools(server);
+    this.registerLookupTools(server);
+
+    return server;
+  }
+
+  // -------------------------------------------------------------------------
+  // System tools
+  // -------------------------------------------------------------------------
+
+  private registerSystemTools(server: McpServer): void {
+    registerMcpTool(server,
+      'list_systems',
+      {
+        description:
+          'List Tidalis delivered systems, optionally filtered. Returns a compact summary per ' +
+          'system; use get_system for the full record.',
+        inputSchema: listSystemsInputSchema,
+      },
+      async ({ search, projectType, countryId, limit }) => {
+        const where: Prisma.SystemWhereInput = { deleted: false };
+        if (search) {
+          where.OR = [{ name: { contains: search } }, { products: { contains: search } }];
+        }
+        const parsedProjectType = parseProjectType(projectType);
+        if (parsedProjectType) {
+          where.projectType = parsedProjectType;
+        }
+        if (countryId !== undefined) {
+          where.countryId = countryId;
+        }
+
+        const [systems, total] = await Promise.all([
+          this.db.system.findMany({
+            where,
+            include: { country: true },
+            orderBy: { name: 'asc' },
+            take: limit ?? DEFAULT_LIMIT,
+          }),
+          this.db.system.count({ where }),
+        ]);
+
+        return asJson({
+          total,
+          returned: systems.length,
+          systems: systems.map((system) => this.toSystemSummary(system)),
+        });
+      },
+    );
+
+    registerMcpTool(server,
+      'get_system',
+      {
+        description:
+          'Get one system in full, including ports, modules, sub-systems, external interfaces, ' +
+          'people, document metadata and the projects (commercial deals) linked to it.',
+        inputSchema: {
+          id: z.number().int().describe('Numeric system id'),
+        },
+      },
+      async ({ id }) => {
+        const system = await this.db.system.findFirst({
+          where: { id, deleted: false },
+          include: SYSTEM_INCLUDE,
+        });
+
+        if (!system) {
+          return asJson({ error: `No system found for id ${id}` });
+        }
+
+        const projects = await this.db.project.findMany({
+          where: { systemId: id, deleted: false },
+          include: { currency: true },
+          orderBy: { awardDate: 'desc' },
+        });
+
+        return asJson({
+          ...this.toSystemDetail(system),
+          projects: projects.map((project) => this.toProjectSummary(project)),
+        });
+      },
+    );
+
+    registerMcpTool(server,
+      'search_reference_systems',
+      {
+        description:
+          'Find systems that may be used as a commercial reference. Only returns systems the ' +
+          'customer approved as a reference (canBeUsedAsReference) and that are not marked ' +
+          'sensitive. The query is matched across name, products, scope and description; add a ' +
+          'country name or ISO code to the query to narrow it down geographically.',
+        inputSchema: {
+          query: z
+            .string()
+            .describe('Free text, e.g. "VTS systems in Belgium" or "coastal radar surveillance"'),
+          projectType: z
+            .string()
+            .optional()
+            .describe(`One of: ${PROJECT_TYPE_VALUES.join(', ')}`),
+          limit: z.number().int().min(1).max(MAX_LIMIT).optional(),
+        },
+      },
+      async ({ query, projectType: projectTypeInput, limit }) => {
+        const projectType = parseProjectType(projectTypeInput);
+        // The query arrives as a natural language phrase. Rather than trying to
+        // parse it, every meaningful word is matched across the free-text
+        // fields and against country name/ISO code, and the results are ranked
+        // by how many words matched.
+        const words = this.significantWords(query);
+
+        const baseWhere: Prisma.SystemWhereInput = {
+          deleted: false,
+          canBeUsedAsReference: true,
+          isSensitive: false,
+          ...(projectType ? { projectType } : {}),
+        };
+
+        const where: Prisma.SystemWhereInput =
+          words.length === 0
+            ? baseWhere
+            : {
+                ...baseWhere,
+                OR: words.flatMap((word) => [
+                  { name: { contains: word } },
+                  { products: { contains: word } },
+                  { scope: { contains: word } },
+                  { description: { contains: word } },
+                  { country: { name: { contains: word } } },
+                  { country: { isoCode: word.length === 2 ? word.toUpperCase() : undefined } },
+                ]),
+              };
+
+        const systems = await this.db.system.findMany({
+          where,
+          include: { country: true },
+          orderBy: { name: 'asc' },
+          take: Math.min((limit ?? DEFAULT_LIMIT) * 2, MAX_LIMIT * 2),
+        });
+
+        const ranked = systems
+          .map((system) => ({
+            system,
+            score: this.matchScore(system, words),
+          }))
+          .sort((a, b) => b.score - a.score)
+          .slice(0, limit ?? DEFAULT_LIMIT);
+
+        return asJson({
+          query,
+          matchedWords: words,
+          returned: ranked.length,
+          systems: ranked.map(({ system, score }) => ({
+            ...this.toSystemSummary(system),
+            matchScore: score,
+            scope: system.scope,
+          })),
+        });
+      },
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // Project tools
+  // -------------------------------------------------------------------------
+
+  private registerProjectTools(server: McpServer): void {
+    registerMcpTool(server,
+      'list_projects',
+      {
+        description:
+          'List Tidalis commercial projects (deals), optionally filtered. Returns a compact ' +
+          'summary per project - the commercial facts (name, award date, prices, project ' +
+          'number) - use get_project for the full record including its linked system.',
+        inputSchema: listProjectsInputSchema,
+      },
+      async ({ search, systemId, limit }) => {
+        const where: Prisma.ProjectWhereInput = { deleted: false };
+        if (search) {
+          where.OR = [{ projectNumber: { contains: search } }, { name: { contains: search } }];
+        }
+        if (systemId !== undefined) {
+          where.systemId = systemId;
+        }
+
+        const [projects, total] = await Promise.all([
+          this.db.project.findMany({
+            where,
+            include: { currency: true, system: true },
+            orderBy: { awardDate: 'desc' },
+            take: limit ?? DEFAULT_LIMIT,
+          }),
+          this.db.project.count({ where }),
+        ]);
+
+        return asJson({
+          total,
+          returned: projects.length,
+          projects: projects.map((project) => this.toProjectSummary(project)),
+        });
+      },
+    );
+
+    registerMcpTool(server,
+      'get_project',
+      {
+        description:
+          'Get one project in full: commercial facts (award date, prices, Pipedrive links, ' +
+          'completion dates) plus its linked system, if any. Give either id or projectNumber.',
+        inputSchema: {
+          id: z.number().int().optional().describe('Numeric project id'),
+          projectNumber: z.string().optional().describe('Tidalis project number, e.g. TID-2024-017'),
+        },
+      },
+      async ({ id, projectNumber }) => {
+        if (id === undefined && !projectNumber) {
+          return asJson({ error: 'Either id or projectNumber is required' });
+        }
+
+        const project = await this.db.project.findFirst({
+          where: id !== undefined ? { id, deleted: false } : { projectNumber, deleted: false },
+          include: PROJECT_INCLUDE,
+        });
+
+        if (!project) {
+          return asJson({
+            error: `No project found for ${id !== undefined ? `id ${id}` : `project number ${projectNumber}`}`,
+          });
+        }
+
+        return asJson(this.toProjectDetail(project));
+      },
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // Lookup tools
+  // -------------------------------------------------------------------------
+
+  private registerLookupTools(server: McpServer): void {
+    registerMcpTool(server,
+      'list_currencies',
+      { description: 'List the currencies project prices can be recorded in.', inputSchema: {} },
+      async () => asJson(await this.db.currency.findMany({ orderBy: { code: 'asc' } })),
+    );
+
+    registerMcpTool(server,
+      'list_countries',
+      {
+        description: 'List countries with their ids and ISO 3166-1 alpha-2 codes.',
+        inputSchema: {},
+      },
+      async () => asJson(await this.db.country.findMany({ orderBy: { name: 'asc' } })),
+    );
+
+    registerMcpTool(server,
+      'list_unlocodes',
+      {
+        description: 'List or search UN/LOCODE port locations by code or name.',
+        inputSchema: {
+          search: z.string().optional().describe('Matches the UN/LOCODE or the location name'),
+          limit: z.number().int().min(1).max(MAX_LIMIT).optional(),
+        },
+      },
+      async ({ search, limit }) =>
+        asJson(
+          await this.db.unLocode.findMany({
+            where: search
+              ? { OR: [{ code: { contains: search } }, { name: { contains: search } }] }
+              : {},
+            include: { country: { select: { isoCode: true, name: true } } },
+            orderBy: { code: 'asc' },
+            take: limit ?? DEFAULT_LIMIT,
+          }),
+        ),
+    );
+
+    registerMcpTool(server,
+      'list_document_types',
+      { description: 'List the document types documents can be filed under.', inputSchema: {} },
+      async () => asJson(await this.db.documentType.findMany({ orderBy: { name: 'asc' } })),
+    );
+  }
+
+  // -------------------------------------------------------------------------
+  // Shaping - systems
+  // -------------------------------------------------------------------------
+
+  private toSystemSummary(system: Record<string, any>) {
+    return {
+      id: system.id,
+      name: system.name,
+      projectType: system.projectType,
+      products: system.products,
+      country: system.country?.name,
+      countryCode: system.country?.isoCode,
+      canBeUsedAsReference: system.canBeUsedAsReference,
+      isSensitive: system.isSensitive,
+      systemDecommissioned: system.systemDecommissioned,
+    };
+  }
+
+  private toSystemDetail(system: Record<string, any>) {
+    return {
+      ...this.toSystemSummary(system),
+      scope: system.scope,
+      description: system.description,
+      customerDetails: system.customerDetails,
+      endUserDetails: system.endUserDetails,
+      pointOfContact: {
+        name: system.pocName,
+        email: system.pocEmail,
+        phone: system.pocPhone,
+      },
+      urls: system.urls?.map((row: any) => ({
+        urlType: row.urlType?.name,
+        description: row.description,
+        url: row.url,
+      })),
+      ports: system.ports?.map((row: any) => ({
+        unlocode: row.unlocode?.code,
+        name: row.unlocode?.name,
+        country: row.unlocode?.country?.name,
+      })),
+      modules: system.modules?.map((row: any) => row.module?.name),
+      subSystems: system.subSystems?.map((row: any) => row.name),
+      externalInterfaces: system.externalInterfaces?.map((row: any) => ({
+        name: row.name,
+        description: row.description,
+      })),
+      people: system.people?.map((row: any) => ({
+        name: row.name,
+        role: row.role,
+        email: row.email,
+      })),
+      documents: system.documents?.map((row: any) => ({
+        id: row.id,
+        fileName: row.fileName,
+        documentType: row.documentType?.name,
+        fileSize: row.fileSize,
+        uploadedAt: row.uploadedAt,
+      })),
+      createdAt: system.createdAt,
+      updatedAt: system.updatedAt,
+    };
+  }
+
+  // -------------------------------------------------------------------------
+  // Shaping - projects
+  // -------------------------------------------------------------------------
+
+  private toProjectSummary(project: Record<string, any>) {
+    return {
+      id: project.id,
+      projectNumber: project.projectNumber,
+      name: project.name,
+      awardDate: this.dateOnly(project.awardDate),
+      endDate: this.dateOnly(project.endDate),
+      projectType: project.projectType,
+      currency: project.currency?.code,
+      implementationPrice: project.implementationPrice,
+      maintenancePricePerYear: project.maintenancePricePerYear,
+      system: project.system ? { id: project.system.id, name: project.system.name } : null,
+    };
+  }
+
+  private toProjectDetail(project: Record<string, any>) {
+    return {
+      ...this.toProjectSummary(project),
+      newDevelopments: project.newDevelopments,
+      implementationDetails: project.implementationDetails,
+      pipedriveNumber: project.pipedriveNumber,
+      urls: project.urls?.map((row: any) => ({
+        urlType: row.urlType?.name,
+        description: row.description,
+        url: row.url,
+      })),
+      completionDates: project.completionDates?.map((row: any) => ({
+        completionDate: this.dateOnly(row.completionDate),
+        description: row.description,
+      })),
+      documents: project.documents?.map((row: any) => ({
+        id: row.id,
+        fileName: row.fileName,
+        documentType: row.documentType?.name,
+        fileSize: row.fileSize,
+        uploadedAt: row.uploadedAt,
+      })),
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+    };
+  }
+
+  private dateOnly(value: Date | null | undefined): string | null {
+    return value ? value.toISOString().slice(0, 10) : null;
+  }
+
+  /** Drops the filler words a natural language question is full of. */
+  private significantWords(query: string): string[] {
+    const stopWords = new Set([
+      'a', 'an', 'and', 'any', 'are', 'as', 'at', 'be', 'been', 'can', 'find', 'for', 'from',
+      'get', 'give', 'has', 'have', 'in', 'is', 'it', 'list', 'me', 'of', 'on', 'or', 'our',
+      'project', 'projects', 'reference', 'references', 'search', 'show', 'system', 'systems',
+      'that', 'the', 'to', 'us', 'usable', 'use', 'used', 'we', 'what', 'where', 'which', 'with',
+    ]);
+
+    return [
+      ...new Set(
+        query
+          .toLowerCase()
+          .split(/[^a-z0-9]+/)
+          .filter((word) => word.length > 1 && !stopWords.has(word)),
+      ),
+    ].slice(0, 12);
+  }
+
+  private matchScore(system: Record<string, any>, words: string[]): number {
+    if (words.length === 0) {
+      return 0;
+    }
+
+    const haystack = [
+      system.name,
+      system.products,
+      system.scope,
+      system.description,
+      system.country?.name,
+      system.country?.isoCode,
+      system.projectType,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+    return words.filter((word) => haystack.includes(word)).length;
+  }
+}

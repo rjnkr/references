@@ -1,0 +1,606 @@
+<div class="panel">
+  <!-- ------------------------------------------------------------------- header -->
+  <header class="panel__header">
+    <div class="panel__titles">
+      <div class="panel__eyebrow">
+        @if (mode === 'create') {
+          New project reference
+        } @else if (mode === 'edit') {
+          Editing project reference
+        } @else {
+          Project reference
+        }
+      </div>
+
+      <h2 class="panel__title">
+        @if (mode === 'create') {
+          Add a project
+        } @else {
+          @if (currentProject()?.projectNumber; as number) {
+            <span class="panel__number">{{ number }}</span>
+            <span class="panel__sep">·</span>
+          }
+          <span>{{
+            currentProject()?.name || currentProject()?.system?.name || 'No linked system'
+          }}</span>
+        }
+      </h2>
+    </div>
+
+    <div class="panel__actions">
+      @if (mode === 'view') {
+        <button mat-flat-button color="primary" type="button" (click)="startEdit()">
+          <mat-icon>edit</mat-icon>
+          <span>Edit</span>
+        </button>
+        <button
+          mat-stroked-button
+          type="button"
+          class="panel__delete"
+          (click)="requestDelete()"
+          matTooltip="Delete this project reference"
+        >
+          <mat-icon>delete_outline</mat-icon>
+          <span class="d-none d-lg-inline">Delete</span>
+        </button>
+      } @else {
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          [disabled]="saving()"
+          (click)="save()"
+        >
+          <mat-icon>save</mat-icon>
+          <span>{{ mode === 'create' ? 'Create' : 'Save' }}</span>
+        </button>
+        <button mat-stroked-button type="button" [disabled]="saving()" (click)="cancel()">
+          Cancel
+        </button>
+      }
+      <button mat-icon-button type="button" (click)="close()" aria-label="Close panel">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </header>
+
+  @if (selectedTags().length > 0) {
+    <div class="panel__tags">
+      @for (tag of selectedTags(); track tag.id) {
+        <span
+          class="tidalis-tag-chip"
+          [style.background-color]="tag.backgroundColor"
+          [style.color]="tag.textColor"
+          >{{ tag.name }}</span
+        >
+      }
+    </div>
+  }
+
+  @if (saving()) {
+    <mat-progress-bar mode="indeterminate" class="panel__progress"></mat-progress-bar>
+  }
+
+  @if (mode === 'view') {
+    <div class="panel__readonly-bar">
+      <mat-icon>visibility</mat-icon>
+      <span>Read-only view — choose <strong>Edit</strong> to make changes.</span>
+    </div>
+  }
+
+  <!-- --------------------------------------------------------------------- body -->
+  <div class="panel__body tidalis-panel-scroll">
+    <form [formGroup]="form" novalidate>
+      <mat-tab-group
+        animationDuration="140ms"
+        [selectedIndex]="tabIndex()"
+        (selectedIndexChange)="tabIndex.set($event)"
+      >
+        <!-- ============================================================ 1. General -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span>General</span>
+            @if (tabHasError(0)) {
+              <span class="tab-dot" title="Missing or invalid fields"></span>
+            }
+          </ng-template>
+
+          <div class="tab-content">
+            <div class="form-card">
+              <div class="form-card__title">General</div>
+              <div class="row g-3">
+                <div class="col-12 col-md-6">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Name</mat-label>
+                    <input matInput formControlName="name" maxlength="100" />
+                    @if (form.get('name')?.hasError('maxlength')) {
+                      <mat-error>Name must be 100 characters or fewer</mat-error>
+                    }
+                  </mat-form-field>
+                </div>
+
+                <div class="col-12 col-md-6">
+                  <app-system-autocomplete
+                    formControlName="system"
+                    hint="The delivered system this project relates to, if any"
+                  ></app-system-autocomplete>
+                </div>
+
+                <div class="col-12 col-md-3">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Project number</mat-label>
+                    <input matInput formControlName="projectNumber" maxlength="60" />
+                  </mat-form-field>
+                </div>
+
+                <div class="col-12 col-md-3">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Award date</mat-label>
+                    <input matInput [matDatepicker]="awardPicker" formControlName="awardDate" />
+                    <mat-datepicker-toggle matIconSuffix [for]="awardPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #awardPicker></mat-datepicker>
+                    @if (form.get('awardDate')?.hasError('required')) {
+                      <mat-error>Award date is required</mat-error>
+                    }
+                  </mat-form-field>
+                </div>
+
+                <div class="col-12 col-md-3">
+                  <mat-form-field appearance="outline">
+                    <mat-label>End date</mat-label>
+                    <input matInput [matDatepicker]="endPicker" formControlName="endDate" />
+                    <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #endPicker></mat-datepicker>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-12 col-md-3">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Project type</mat-label>
+                    <mat-select formControlName="projectType" multiple>
+                      @for (tag of projectTags; track tag) {
+                        <mat-option [value]="tag">{{ projectTagLabels[tag] }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-12 col-md-3">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Tags</mat-label>
+                    <mat-select formControlName="tags" multiple>
+                      @for (tag of lookups.tags(); track tag.id) {
+                        <mat-option [value]="tag.id">{{ tag.name }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-12 col-md-4">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Pipedrive number</mat-label>
+                    <input matInput formControlName="pipedriveNumber" />
+                  </mat-form-field>
+                </div>
+              </div>
+
+              @if (currentProject(); as project) {
+                <mat-divider></mat-divider>
+                <div class="panel__meta">
+                  <span>Created {{ project.createdAt | date: 'dd MMM yyyy, HH:mm' }}</span>
+                  <span>Last updated {{ project.updatedAt | date: 'dd MMM yyyy, HH:mm' }}</span>
+                </div>
+              }
+            </div>
+
+            <div class="form-card">
+              <div class="form-card__title">Financial</div>
+              <div class="row g-3">
+                <div class="col-12 col-md-4">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Currency</mat-label>
+                    <mat-select formControlName="currencyId">
+                      @for (currency of lookups.currencies(); track currency.id) {
+                        <mat-option [value]="currency.id">
+                          {{ currency.code }} — {{ currency.name }}
+                        </mat-option>
+                      }
+                    </mat-select>
+                    @if (form.get('currencyId')?.hasError('required')) {
+                      <mat-error>Currency is required</mat-error>
+                    }
+                  </mat-form-field>
+                </div>
+
+                <div class="col-12 col-md-4">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Implementation price</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      step="1"
+                      min="0"
+                      formControlName="implementationPrice"
+                    />
+                    @if (form.get('implementationPrice')?.hasError('required')) {
+                      <mat-error>Implementation price is required</mat-error>
+                    }
+                    @if (form.get('implementationPrice')?.hasError('min')) {
+                      <mat-error>Must be zero or more</mat-error>
+                    }
+                  </mat-form-field>
+                </div>
+
+                <div class="col-12 col-md-4">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Maintenance price / year</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      step="1"
+                      min="0"
+                      formControlName="maintenancePricePerYear"
+                    />
+                    @if (form.get('maintenancePricePerYear')?.hasError('required')) {
+                      <mat-error>Maintenance price is required</mat-error>
+                    }
+                    @if (form.get('maintenancePricePerYear')?.hasError('min')) {
+                      <mat-error>Must be zero or more</mat-error>
+                    }
+                  </mat-form-field>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-card">
+              <div class="form-card__title">
+                Completion dates
+                <span class="tab-count">{{ completionDates.length }}</span>
+              </div>
+              <div class="share-hint">
+                <mat-icon>public</mat-icon>
+                <span>
+                  Public — visible to potential customers. Milestones as officially accepted
+                  by the customer. E.g. phase 1, phase 2.
+                </span>
+              </div>
+
+              <div formArrayName="completionDates">
+                @for (row of completionDates.controls; track row; let i = $index) {
+                  <div class="repeat-row" [formGroupName]="i">
+                    <div class="repeat-row__main row g-2">
+                      <div class="col-12 col-md-4">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Completion date</mat-label>
+                          <input
+                            matInput
+                            [matDatepicker]="completionPicker"
+                            formControlName="completionDate"
+                          />
+                          <mat-datepicker-toggle
+                            matIconSuffix
+                            [for]="completionPicker"
+                          ></mat-datepicker-toggle>
+                          <mat-datepicker #completionPicker></mat-datepicker>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-12 col-md-8">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Description</mat-label>
+                          <input
+                            matInput
+                            formControlName="description"
+                            placeholder="e.g. Phase 1 hand-over"
+                          />
+                        </mat-form-field>
+                      </div>
+                    </div>
+                    <button
+                      mat-icon-button
+                      type="button"
+                      class="repeat-row__remove"
+                      [disabled]="isReadonly()"
+                      (click)="removeAt(completionDates, i)"
+                    >
+                      <mat-icon>delete_outline</mat-icon>
+                    </button>
+                  </div>
+                } @empty {
+                  <div class="tidalis-empty">No completion dates recorded.</div>
+                }
+              </div>
+              <button
+                mat-stroked-button
+                type="button"
+                class="add-button"
+                [disabled]="isReadonly()"
+                (click)="addCompletionDate()"
+              >
+                <mat-icon>add</mat-icon>
+                <span>Add completion date</span>
+              </button>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- ============================================================== 2. Notes -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span>Notes</span>
+            @if (tabHasError(1)) {
+              <span class="tab-dot"></span>
+            }
+          </ng-template>
+
+          <div class="tab-content row g-2">
+            <div class="col-12">
+              <div class="share-hint">
+                <mat-icon>public</mat-icon>
+                <span>
+                  Public — visible to potential customers. What was done, e.g. replacement of a
+                  legacy system, installation of radar, network.
+                </span>
+              </div>
+              <mat-form-field appearance="outline">
+                <mat-label>Implementation details</mat-label>
+                <textarea matInput formControlName="implementationDetails" rows="6"></textarea>
+              </mat-form-field>
+            </div>
+
+            <div class="col-12">
+              <div class="share-hint">
+                <mat-icon>public</mat-icon>
+                <span>
+                  Public — visible to potential customers. Which functionality has been added
+                  to the product.
+                </span>
+              </div>
+              <mat-form-field appearance="outline">
+                <mat-label>New developments</mat-label>
+                <textarea matInput formControlName="newDevelopments" rows="6"></textarea>
+              </mat-form-field>
+            </div>
+
+            <div class="col-12">
+              <div class="soft-warning">
+                <mat-icon>lock</mat-icon>
+                <span>
+                  Internal use only — visible to Tidalis employees only. Never disclose this
+                  note to customers, or through AI/reference search or any other public-facing
+                  output.
+                </span>
+              </div>
+              <mat-form-field appearance="outline">
+                <mat-label>Internal notes</mat-label>
+                <textarea matInput formControlName="internalNotes" rows="6"></textarea>
+              </mat-form-field>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- =============================================================== 3. URLs -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span>URLs</span>
+            <span class="tab-count">{{ urls.length }}</span>
+            @if (tabHasError(2)) {
+              <span class="tab-dot" title="Missing or invalid fields"></span>
+            }
+          </ng-template>
+
+          <div class="tab-content">
+            <div class="form-card">
+              <div class="form-card__title">
+                URLs
+                <span class="tab-count">{{ urls.length }}</span>
+              </div>
+
+              <div formArrayName="urls">
+                @for (row of urls.controls; track row; let i = $index) {
+                  <div class="repeat-row" [formGroupName]="i">
+                    <div class="repeat-row__main row g-2">
+                      <div class="col-12 col-md-3">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Type</mat-label>
+                          <mat-select formControlName="urlTypeId">
+                            @for (type of lookups.urlTypes(); track type.id) {
+                              <mat-option [value]="type.id">{{ type.name }}</mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                      </div>
+                      <div class="col-12 col-md-4">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Description</mat-label>
+                          <input
+                            matInput
+                            formControlName="description"
+                            placeholder="e.g. Deal page"
+                          />
+                        </mat-form-field>
+                      </div>
+                      <div class="col-12 col-md-5">
+                        <mat-form-field appearance="outline">
+                          <mat-label>URL</mat-label>
+                          <input matInput formControlName="url" placeholder="https://…" />
+                        </mat-form-field>
+                        @if (row.get('url')?.value) {
+                          <a
+                            class="external-link"
+                            [href]="row.get('url')?.value"
+                            target="_blank"
+                            rel="noopener"
+                          >
+                            <mat-icon>open_in_new</mat-icon>
+                            <span>Open</span>
+                          </a>
+                        }
+                      </div>
+                    </div>
+                    <button
+                      mat-icon-button
+                      type="button"
+                      class="repeat-row__remove"
+                      [disabled]="isReadonly()"
+                      (click)="removeAt(urls, i)"
+                    >
+                      <mat-icon>delete_outline</mat-icon>
+                    </button>
+                  </div>
+                } @empty {
+                  <div class="tidalis-empty">No URLs recorded.</div>
+                }
+              </div>
+              <button
+                mat-stroked-button
+                type="button"
+                class="add-button"
+                [disabled]="isReadonly()"
+                (click)="addUrl()"
+              >
+                <mat-icon>add</mat-icon>
+                <span>Add URL</span>
+              </button>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- ========================================================== 4. Documents -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span>Documents</span>
+            <span class="tab-count">{{ documents().length }}</span>
+          </ng-template>
+
+          <div class="tab-content">
+            @if (!currentProject()) {
+              <div class="soft-warning">
+                <mat-icon>info</mat-icon>
+                <span>Save the project first to attach documents.</span>
+              </div>
+            } @else {
+              <div class="doc-table-wrap tidalis-scroll-x">
+                <table class="doc-table">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>File name</th>
+                      <th class="text-end">Size</th>
+                      <th>Uploaded</th>
+                      <th>By</th>
+                      <th class="text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (doc of documents(); track doc.id) {
+                      <tr>
+                        <td>
+                          <span class="tidalis-chip tidalis-chip--blue">
+                            {{ doc.documentType ? doc.documentType.name : '—' }}
+                          </span>
+                        </td>
+                        <td class="doc-table__name" [title]="doc.fileName">{{ doc.fileName }}</td>
+                        <td class="text-end">{{ formatFileSize(doc.fileSize) }}</td>
+                        <td>{{ doc.uploadedAt | date: 'dd MMM yyyy' }}</td>
+                        <td>{{ doc.uploadedBy || '—' }}</td>
+                        <td class="text-center doc-table__actions">
+                          <a
+                            mat-icon-button
+                            [href]="downloadUrl(doc.id)"
+                            target="_blank"
+                            rel="noopener"
+                            matTooltip="Download"
+                            aria-label="Download document"
+                          >
+                            <mat-icon>download</mat-icon>
+                          </a>
+                          <button
+                            mat-icon-button
+                            type="button"
+                            class="doc-table__delete"
+                            matTooltip="Delete document"
+                            (click)="deleteDocument(doc)"
+                          >
+                            <mat-icon>delete_outline</mat-icon>
+                          </button>
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="6" class="tidalis-empty">No documents attached yet.</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <mat-divider class="section-divider"></mat-divider>
+
+              <div class="tidalis-section-title">Upload a document</div>
+              @if (uploading()) {
+                <mat-progress-bar mode="indeterminate" class="panel__progress"></mat-progress-bar>
+              }
+              <div class="upload-row row g-2 align-items-start">
+                <div class="col-12 col-md-4">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Document type *</mat-label>
+                    <mat-select
+                      [value]="uploadDocumentTypeId()"
+                      (valueChange)="uploadDocumentTypeId.set($event)"
+                    >
+                      @for (type of lookups.documentTypes(); track type.id) {
+                        <mat-option [value]="type.id">{{ type.name }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-12 col-md-5">
+                  <input
+                    #fileInput
+                    type="file"
+                    class="visually-hidden"
+                    (change)="onFileSelected($event)"
+                  />
+                  <div class="file-picker">
+                    <button mat-stroked-button type="button" (click)="fileInput.click()">
+                      <mat-icon>attach_file</mat-icon>
+                      <span>Choose file</span>
+                    </button>
+                    <span class="file-picker__name" [title]="selectedFile()?.name || ''">
+                      {{ selectedFile()?.name || 'No file selected' }}
+                    </span>
+                    @if (selectedFile()) {
+                      <button
+                        mat-icon-button
+                        type="button"
+                        matTooltip="Clear selection"
+                        (click)="clearSelectedFile(fileInput)"
+                      >
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    }
+                  </div>
+                </div>
+
+                <div class="col-12 col-md-3">
+                  <button
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    class="upload-row__button"
+                    [disabled]="!selectedFile() || uploadDocumentTypeId() === null || uploading()"
+                    (click)="uploadDocument(fileInput)"
+                  >
+                    <mat-icon>upload</mat-icon>
+                    <span>Upload</span>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </form>
+  </div>
+</div>

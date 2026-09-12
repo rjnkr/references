@@ -1,0 +1,40 @@
+<div class="login-wrap">
+  <div class="tidalis-card login-card">
+    <div class="login-card__banner">
+      <span class="login-card__banner__mark">
+        <img src="favicon-192x192.png" alt="" width="26" height="26" />
+      </span>
+      <div>
+        <div class="login-card__brand">Tidalis</div>
+        <div class="login-card__product">Project References</div>
+      </div>
+    </div>
+
+    <div class="tidalis-card-body login-card__body">
+      <h1>Sign in</h1>
+      <p class="tidalis-muted">
+        This is an internal Tidalis tool. Access is granted through Tidalis single sign-on.
+      </p>
+
+      <button
+        mat-flat-button
+        color="primary"
+        class="login-card__button"
+        type="button"
+        [disabled]="redirecting"
+        (click)="signIn()"
+      >
+        @if (redirecting) {
+          <mat-spinner diameter="18" class="login-card__spinner"></mat-spinner>
+        } @else {
+          <mat-icon>login</mat-icon>
+        }
+        <span>{{ redirecting ? 'Redirecting…' : 'Sign in with Tidalis SSO' }}</span>
+      </button>
+
+      <p class="login-card__hint tidalis-muted">
+        You will be taken to the Tidalis identity provider and returned here once signed in.
+      </p>
+    </div>
+  </div>
+</div>

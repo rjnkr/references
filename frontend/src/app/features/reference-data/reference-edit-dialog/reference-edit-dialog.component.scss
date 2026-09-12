@@ -1,0 +1,59 @@
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: min(420px, 80vw);
+  padding-top: 4px;
+}
+
+.edit-form__preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border: 1px dashed var(--tidalis-border);
+  border-radius: var(--tidalis-radius);
+  background: var(--tidalis-header-bg);
+}
+
+.edit-form__preview-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--tidalis-muted);
+}
+
+.edit-form__preview-empty {
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: var(--tidalis-muted);
+}
+
+.tidalis-tag-chip {
+  font-size: 0.8125rem;
+  padding: 3px 12px;
+}
+
+.edit-form__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.edit-form__field {
+  width: 100%;
+}
+
+.edit-form__color-swatch {
+  flex: 0 0 auto;
+  inline-size: 40px;
+  block-size: 40px;
+  margin-top: 4px;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  cursor: pointer;
+  background: none;
+}

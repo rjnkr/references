@@ -1,0 +1,22 @@
+/// Lookup table for labelled tags that can be attached to projects and systems, shown in
+/// grids as a coloured, rounded chip.
+model Tag {
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  id              Int    @id @default(autoincrement())
+  /// @maxLength 20
+  code            String @unique @db.VarChar(20)
+  /// @maxLength 100
+  name            String @db.VarChar(100)
+  /// Chip background colour, `#RRGGBB`.
+  /// @maxLength 7
+  backgroundColor String @db.VarChar(7)
+  /// Chip text colour, `#RRGGBB`.
+  /// @maxLength 7
+  textColor       String @db.VarChar(7)
+
+  projects ProjectTagAssignment[]
+  systems  SystemTagAssignment[]
+
+  @@map("tags")
+}

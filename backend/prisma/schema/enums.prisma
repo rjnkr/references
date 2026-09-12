@@ -1,0 +1,29 @@
+/// The kind of system Tidalis delivered for a project.
+enum ProjectType {
+  PMIS
+  VTS
+  AIS
+  COASTAL
+  PILOT
+  OTHER
+}
+
+/// The kind of change a ProjectAuditLog entry records.
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  RESTORE
+}
+
+/// Which phase(s) of work a Project covers. Stored as a JSON array on
+/// `Project.projectType` - MySQL has no native scalar-list column type - so a project can
+/// carry either, both, or neither. `SM` = Support & Maintenance.
+enum ProjectTag {
+  IMPLEMENTATION
+  SM
+  PROOF_OF_CONCEPT
+  STUDY
+  CONSULTANCY
+  REQUIREMENT_ANALYSIS
+}
