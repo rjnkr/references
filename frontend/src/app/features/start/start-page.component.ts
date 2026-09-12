@@ -38,9 +38,9 @@ export class StartPageComponent {
     },
     {
       icon: 'table_view',
-      title: 'Projects',
+      title: 'Contracts',
       description: 'Browse, search and manage the commercial deals behind each reference',
-      link: '/projects',
+      link: '/contracts',
       cta: 'Open the list',
     },
     {
@@ -53,7 +53,7 @@ export class StartPageComponent {
     {
       icon: 'menu_book',
       title: 'User Manual',
-      description: 'How to use this tool — systems, projects, the world map and more',
+      description: 'How to use this tool — systems, contracts, the world map and more',
       link: '/manual',
       cta: 'Read the manual',
     },
@@ -67,7 +67,7 @@ export class StartPageComponent {
     {
       icon: 'history',
       title: 'Audit Trail',
-      description: 'See who changed which project reference, and what changed',
+      description: 'See who changed which contract reference, and what changed',
       link: '/audit-log',
       cta: 'Open the audit trail',
     },
@@ -82,7 +82,7 @@ export class StartPageComponent {
     {
       icon: 'smart_toy',
       title: 'Connect Claude',
-      description: 'Let Claude query project references for you, via MCP',
+      description: 'Let Claude query contract references for you, via MCP',
       link: '/claude-integration',
       cta: 'See how to connect',
     },

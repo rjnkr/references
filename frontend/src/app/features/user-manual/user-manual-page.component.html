@@ -3,7 +3,7 @@
     <div class="manual-heading">
       <h1><mat-icon class="manual-heading__icon">menu_book</mat-icon> User Manual</h1>
       <div class="tidalis-card-subtitle">
-        How to use the Tidalis Project References tool — systems, projects, the world map
+        How to use the Tidalis Contract References tool — systems, contracts, the world map
         and the reference data behind them.
       </div>
     </div>
@@ -27,14 +27,14 @@
         <p>
           This tool tracks the systems Tidalis has delivered — Maritime Control, Port Control and
           similar installations — so they can be reused as sales references, and the
-          commercial <strong>projects</strong> (deals) behind them.
+          commercial <strong>contracts</strong> (deals) behind them.
         </p>
         <p>
           A <strong>System</strong> is the thing that was actually built and delivered: its
-          scope, location, modules, contacts and documents. A <strong>Project</strong> is a
+          scope, location, modules, contacts and documents. A <strong>Contract</strong> is a
           commercial record that points back to the System it belongs to. One system can have
-          several projects linked to  it (an initial implementation plus later maintenance renewals, for example).
-          In case a support & maintenance contract is renewed, a new project shall be created to reflect the updated information.
+          several contracts linked to  it (an initial implementation plus later maintenance renewals, for example).
+          In case a support & maintenance contract is renewed, a new contract shall be created to reflect the updated information.
         </p>
         <p>
           Both live in sortable, filterable grids with a slide-over detail panel for viewing
@@ -124,30 +124,30 @@
         </p>
       </section>
 
-      <!-- ============================================================== Projects -->
-      <section id="projects" class="manual-section">
-        <h2>Projects</h2>
+      <!-- ============================================================= Contracts -->
+      <section id="contracts" class="manual-section">
+        <h2>Contracts</h2>
         <p>
-          <strong>Projects</strong> works the same way as the Systems grid — floating
+          <strong>Contracts</strong> works the same way as the Systems grid — floating
           filters, sortable columns, a Columns menu, click a row to view it, Edit to change
-          it. Every project links back to exactly one System, shown by name in the grid's
+          it. Every contract links back to exactly one System, shown by name in the grid's
           <strong>System</strong> column and in the detail panel title.
         </p>
 
         <h3>Detail panel tabs</h3>
         <ul class="manual-list">
           <li>
-            <strong>General</strong> — project number, the linked System (type a few letters
+            <strong>General</strong> — contract number, the linked System (type a few letters
             of its name to search and pick it — the same live lookup used for a system's own
             UN/LOCODE), award/completion dates, implementation and maintenance pricing,
-            currency, project type, tags and the Pipedrive deal number.
+            currency, contract type, tags and the Pipedrive deal number.
           </li>
           <li>
             <strong>Notes</strong> — free text, in this order: <strong>Implementation
             details</strong> first, <strong>New developments</strong> below it.
           </li>
           <li><strong>URLs</strong> — links grouped by type, same as on a System.</li>
-          <li><strong>Documents</strong> — files attached to the project, available once it's been saved once.</li>
+          <li><strong>Documents</strong> — files attached to the contract, available once it's been saved once.</li>
         </ul>
       </section>
 
@@ -205,14 +205,14 @@
         <p>
           <strong>Reference Data</strong> manages the shared lookup tables that back
           dropdowns and tags everywhere else in the app. Open a tile to add, rename or
-          delete an entry — a value still referenced by a system or project can't be
+          delete an entry — a value still referenced by a system or contract can't be
           deleted until nothing uses it any more.
         </p>
         <ul class="manual-list">
           <li><strong>Countries</strong> and <strong>Currencies</strong> — standard reference lists.</li>
           <li><strong>UN/LOCODEs</strong> — ports and locations, each with coordinates, used for a system's own location and for its ports.</li>
           <li><strong>Modules</strong> — the named modules a system can be built from (see <a routerLink="." fragment="systems">Systems</a>).</li>
-          <li><strong>Tags</strong> — coloured labels usable on both systems and projects.</li>
+          <li><strong>Tags</strong> — coloured labels usable on both systems and contracts.</li>
           <li><strong>Document Types</strong> and <strong>URL Types</strong> — the categories offered when attaching a document or a link.</li>
         </ul>
       </section>
@@ -222,7 +222,7 @@
         <h2>Audit Trail</h2>
         <p>
           <strong>Audit Trail</strong> lists every create, update and delete, for either
-          Systems or Projects (Systems by default) — switch between the two with the toggle
+          Systems or Contracts (Systems by default) — switch between the two with the toggle
           at the top. Open an entry to see exactly which fields changed and their
           before/after values.
         </p>
@@ -240,7 +240,7 @@
         <p>
           <strong>Connect Claude</strong> exposes this data over MCP (Model Context
           Protocol), so Claude Desktop, Claude Code or any other MCP-compatible client can
-          answer questions about systems, projects, ports and pricing directly — without
+          answer questions about systems, contracts, ports and pricing directly — without
           anyone copying data into a chat by hand. The page there walks through the
           connection details step by step.
         </p>
@@ -254,7 +254,7 @@
           <li>A red dot on a tab label means a required field on that tab is missing or invalid.</li>
           <li>Grid column order, visibility, width and your filters are remembered per browser, not shared with colleagues.</li>
           <li>The Systems grid's Map column, the World Map's "show ports" toggle and the Audit Trail's Local/UTC timestamp choice are all per-browser preferences — they don't affect what anyone else sees.</li>
-          <li>Deleting a system or project removes it from the grid and the map immediately — if you delete one by mistake, contact an administrator right away rather than recreating it from scratch.</li>
+          <li>Deleting a system or contract removes it from the grid and the map immediately — if you delete one by mistake, contact an administrator right away rather than recreating it from scratch.</li>
         </ul>
       </section>
     </div>

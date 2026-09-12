@@ -42,5 +42,5 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.7.2"
   },
-  "description": "Tidalis project references frontend (Angular + Angular Material + Bootstrap 5)"
+  "description": "Tidalis contract references frontend (Angular + Angular Material + Bootstrap 5)"
 }

@@ -26,8 +26,8 @@ import {
 } from 'ag-grid-community';
 
 import { LookupService } from '../../core/api/lookup.service';
-import { ProjectService } from '../../core/api/project.service';
-import { Project } from '../../core/models/project.models';
+import { ContractService } from '../../core/api/contract.service';
+import { Contract } from '../../core/models/contract.models';
 import {
   ConfirmDialogComponent,
   ConfirmDialogData,
@@ -43,23 +43,23 @@ import {
   ALL_COLUMN_IDS,
   COLUMN_SORT_KEYS,
   DEFAULT_VISIBLE_COLUMN_IDS,
-  buildProjectColumnDefs,
-} from './grid/project-column-defs';
+  buildContractColumnDefs,
+} from './grid/contract-column-defs';
 import {
-  ProjectDetailPanelComponent,
-  ProjectPanelState,
-} from './project-detail-panel/project-detail-panel.component';
+  ContractDetailPanelComponent,
+  ContractPanelState,
+} from './contract-detail-panel/contract-detail-panel.component';
 
-const VISIBLE_COLUMNS_STORAGE_KEY = 'tidalis.projectReferences.visibleColumns';
+const VISIBLE_COLUMNS_STORAGE_KEY = 'tidalis.contractReferences.visibleColumns';
 /** Persists a user's drag-to-reorder — restored on next visit or when navigating back to
  *  this screen (the component, and so this array, is rebuilt fresh each time). */
-const COLUMN_ORDER_STORAGE_KEY = 'tidalis.projectReferences.columnOrder';
+const COLUMN_ORDER_STORAGE_KEY = 'tidalis.contractReferences.columnOrder';
 /** Persists AG Grid's own filter model (every column's floating filter) — same reason:
  *  navigating to another screen (e.g. World Map) and back destroys and rebuilds this whole
  *  component, which would otherwise silently drop whatever the user had typed in. */
-const COLUMN_FILTERS_STORAGE_KEY = 'tidalis.projectReferences.columnFilters';
+const COLUMN_FILTERS_STORAGE_KEY = 'tidalis.contractReferences.columnFilters';
 /** Persists a user's drag-to-resize, same reason as `COLUMN_ORDER_STORAGE_KEY`. */
-const COLUMN_WIDTHS_STORAGE_KEY = 'tidalis.projectReferences.columnWidths';
+const COLUMN_WIDTHS_STORAGE_KEY = 'tidalis.contractReferences.columnWidths';
 
 /** Minimal stand-in for Material's `Sort` — dropped along with `MatSortModule`. */
 interface GridSort {
@@ -68,20 +68,20 @@ interface GridSort {
 }
 
 /**
- * "Project References" — the commercial-deal grid, rendered with AG Grid Community. The
+ * "Contract References" — the commercial-deal grid, rendered with AG Grid Community. The
  * delivered-system side of a reference (scope, products, location, ports, ...) lives on
- * the separate Systems grid; a project optionally links to one via `systemId`.
+ * the separate Systems grid; a contract optionally links to one via `systemId`.
  *
  * Filtering strategy (documented in frontend/README.md):
  *  - sorting and pagination are sent to the backend, since AG Grid Community's client-side
  *    row model only ever holds the one page currently loaded — there is no server-side row
  *    model outside Enterprise. There is no separate global search box: every column's own
  *    floating filter (AG Grid's Text/Number/Date filters — the Set filter is Enterprise-only,
- *    see `project-column-defs.ts`) covers that, client-side, on the page that is currently
+ *    see `contract-column-defs.ts`) covers that, client-side, on the page that is currently
  *    loaded, which keeps typing instant.
  */
 @Component({
-  selector: 'app-projects-page',
+  selector: 'app-contracts-page',
   imports: [
     AgGridAngular,
     MatPaginatorModule,
@@ -93,13 +93,13 @@ interface GridSort {
     MatProgressBarModule,
     MatTooltipModule,
     MatDividerModule,
-    ProjectDetailPanelComponent,
+    ContractDetailPanelComponent,
   ],
-  templateUrl: './projects-page.component.html',
-  styleUrl: './projects-page.component.scss',
+  templateUrl: './contracts-page.component.html',
+  styleUrl: './contracts-page.component.scss',
 })
-export class ProjectsPageComponent implements OnInit {
-  private readonly projects = inject(ProjectService);
+export class ContractsPageComponent implements OnInit {
+  private readonly contracts = inject(ContractService);
   private readonly lookups = inject(LookupService);
   private readonly dialog = inject(MatDialog);
   private readonly snackbar = inject(MatSnackBar);
@@ -109,11 +109,11 @@ export class ProjectsPageComponent implements OnInit {
   protected readonly gridTheme = TIDALIS_GRID_THEME;
   protected readonly pageSizeOptions = [10, 25, 50, 100, 250, 500];
   /** `params.context` for every cell renderer — see `RowActionsCellRendererComponent`. */
-  protected readonly gridContext: RowActionsGridContext<Project> = { componentParent: this };
+  protected readonly gridContext: RowActionsGridContext<Contract> = { componentParent: this };
 
   /* --- Data --------------------------------------------------------------------- */
 
-  protected readonly rows = signal<Project[]>([]);
+  protected readonly rows = signal<Contract[]>([]);
   protected readonly total = signal(0);
   protected readonly loading = signal(false);
   protected readonly loadError = signal<string | null>(null);
@@ -133,10 +133,10 @@ export class ProjectsPageComponent implements OnInit {
   /** The grid's own column definitions — built once; live visibility changes go through
    *  the grid API (`toggleColumn`), not by rebuilding this array. Order reflects whatever
    *  the user last dragged it to (see `onGridColumnMoved`). */
-  protected readonly columnDefs: ColDef<Project>[] = this.withInitialSort(
-    reorderColumnDefs(buildProjectColumnDefs(this.visibleColumnKeys()), this.restoreColumnOrder()),
+  protected readonly columnDefs: ColDef<Contract>[] = this.withInitialSort(
+    reorderColumnDefs(buildContractColumnDefs(this.visibleColumnKeys()), this.restoreColumnOrder()),
   );
-  protected readonly defaultColDef: ColDef<Project> = {
+  protected readonly defaultColDef: ColDef<Contract> = {
     resizable: true,
     sortingOrder: ['asc', 'desc'],
   };
@@ -144,7 +144,7 @@ export class ProjectsPageComponent implements OnInit {
    *  applied — `resetColumns()` uses this to put widths back exactly as delivered. */
   private readonly defaultColumnWidths: Record<string, number> = Object.fromEntries(
     this.columnDefs
-      .filter((def): def is ColDef<Project> & { colId: string; width: number } =>
+      .filter((def): def is ColDef<Contract> & { colId: string; width: number } =>
         typeof def.colId === 'string' && typeof def.width === 'number',
       )
       .map((def) => [def.colId, def.width]),
@@ -155,20 +155,20 @@ export class ProjectsPageComponent implements OnInit {
     .filter((def) => def.colId !== ACTIONS_COLUMN_ID)
     .map((def) => ({ colId: def.colId as string, label: def.headerName ?? def.colId! }));
 
-  private gridApi?: GridApi<Project>;
+  private gridApi?: GridApi<Contract>;
 
   /** Stable row identity across `rowData` updates (reload, sort, page). */
-  protected readonly getRowId = (params: GetRowIdParams<Project>): string => String(params.data.id);
+  protected readonly getRowId = (params: GetRowIdParams<Contract>): string => String(params.data.id);
 
   /** Highlights the row currently open in the detail panel — same look the old
-   *  `mat-table` gave `.project-row--selected`. Re-evaluated by an explicit `redrawRows()`
+   *  `mat-table` gave `.contract-row--selected`. Re-evaluated by an explicit `redrawRows()`
    *  call wherever `selectedId` changes, since it isn't itself a grid input AG Grid watches. */
-  protected readonly getRowClass = (params: RowClassParams<Project>): string =>
-    params.data?.id === this.selectedId() ? 'project-row--selected' : '';
+  protected readonly getRowClass = (params: RowClassParams<Contract>): string =>
+    params.data?.id === this.selectedId() ? 'contract-row--selected' : '';
 
   /* --- Detail panel -------------------------------------------------------------- */
 
-  protected readonly panel = signal<ProjectPanelState | null>(null);
+  protected readonly panel = signal<ContractPanelState | null>(null);
   protected readonly selectedId = signal<number | null>(null);
 
   ngOnInit(): void {
@@ -188,9 +188,9 @@ export class ProjectsPageComponent implements OnInit {
     this.loading.set(true);
     this.loadError.set(null);
 
-    this.projects
+    this.contracts
       .list({
-        sort: ProjectService.encodeSort(this.sort().active, this.sort().direction),
+        sort: ContractService.encodeSort(this.sort().active, this.sort().direction),
         page: this.pageIndex() + 1,
         pageSize: this.pageSize(),
       })
@@ -205,7 +205,7 @@ export class ProjectsPageComponent implements OnInit {
           this.total.set(0);
           this.loading.set(false);
           this.loadError.set(
-            'Could not load project references. Check that the API on :3000 is running.',
+            'Could not load contract references. Check that the API on :3000 is running.',
           );
         },
       });
@@ -213,7 +213,7 @@ export class ProjectsPageComponent implements OnInit {
 
   /* --- Grid interactions ---------------------------------------------------------- */
 
-  onGridReady(event: GridReadyEvent<Project>): void {
+  onGridReady(event: GridReadyEvent<Contract>): void {
     this.gridApi = event.api;
     // Applied even though `rowData` may still be empty (the initial `load()` is likely
     // still in flight) — AG Grid re-runs the filter against rows as they arrive.
@@ -232,11 +232,11 @@ export class ProjectsPageComponent implements OnInit {
 
   /**
    * AG Grid Community has no server-side row model, so every sortable column's comparator
-   * is a no-op (see `project-column-defs.ts`) — the header click still fires this event, we
+   * is a no-op (see `contract-column-defs.ts`) — the header click still fires this event, we
    * just translate it into the real, server-side sort instead of letting AG Grid re-order
    * the one page it already has.
    */
-  onGridSortChanged(event: SortChangedEvent<Project>): void {
+  onGridSortChanged(event: SortChangedEvent<Contract>): void {
     const sorted = event.api.getColumnState().find((state) => state.sort);
     if (!sorted) {
       return;
@@ -255,26 +255,26 @@ export class ProjectsPageComponent implements OnInit {
    * correct right after the initial load and after every `rowData` refresh — otherwise it
    * sits at its initial 0 and "0 of 5 shown" wrongly implies an active filter.
    */
-  onGridModelUpdated(event: ModelUpdatedEvent<Project>): void {
+  onGridModelUpdated(event: ModelUpdatedEvent<Contract>): void {
     this.displayedRowCount.set(event.api.getDisplayedRowCount());
   }
 
-  onRowClicked(event: RowClickedEvent<Project>): void {
+  onRowClicked(event: RowClickedEvent<Contract>): void {
     if (event.data) {
-      this.openProject(event.data);
+      this.openContract(event.data);
     }
   }
 
   /** Persists AG Grid's own filter model on every change, including it being cleared —
    *  `clearFilters()` below relies on this to also clear what's persisted, rather than
    *  needing to touch localStorage itself. */
-  onGridFilterChanged(event: FilterChangedEvent<Project>): void {
+  onGridFilterChanged(event: FilterChangedEvent<Contract>): void {
     this.persistColumnFilters(event.api.getFilterModel());
   }
 
   /** `columnMoved` fires continuously while dragging — only persist once the drag (or a
    *  keyboard move) actually finishes, not on every intermediate frame. */
-  onGridColumnMoved(event: ColumnMovedEvent<Project>): void {
+  onGridColumnMoved(event: ColumnMovedEvent<Contract>): void {
     if (event.finished) {
       this.persistColumnOrder(event.api.getColumnState().map((state) => state.colId));
     }
@@ -285,7 +285,7 @@ export class ProjectsPageComponent implements OnInit {
    *  (a real drag) so that `resetColumns()`'s own `applyColumnState` call — which also
    *  fires this event, `source: 'api'` — cannot immediately re-persist the very widths it
    *  just told localStorage to forget. */
-  onGridColumnResized(event: ColumnResizedEvent<Project>): void {
+  onGridColumnResized(event: ColumnResizedEvent<Contract>): void {
     if (event.finished && event.source === 'uiColumnResized') {
       this.persistColumnWidths(event.api.getColumnState());
     }
@@ -492,7 +492,7 @@ export class ProjectsPageComponent implements OnInit {
 
   /** Stamps the initial `sort` state onto whichever column def matches it, so the header
    *  shows the right arrow before the user has clicked anything. */
-  private withInitialSort(defs: ColDef<Project>[]): ColDef<Project>[] {
+  private withInitialSort(defs: ColDef<Contract>[]): ColDef<Contract>[] {
     const { active, direction } = this.sort();
     for (const def of defs) {
       if (def.colId && COLUMN_SORT_KEYS[def.colId] === active) {
@@ -505,23 +505,23 @@ export class ProjectsPageComponent implements OnInit {
 
   /* --- Detail panel --------------------------------------------------------------- */
 
-  openProject(project: Project): void {
-    this.selectedId.set(project.id);
-    this.panel.set({ mode: 'view', project });
+  openContract(contract: Contract): void {
+    this.selectedId.set(contract.id);
+    this.panel.set({ mode: 'view', contract });
     this.gridApi?.redrawRows();
   }
 
-  newProject(): void {
+  newContract(): void {
     this.selectedId.set(null);
-    this.panel.set({ mode: 'create', project: null });
+    this.panel.set({ mode: 'create', contract: null });
     this.gridApi?.redrawRows();
   }
 
-  /** Matches `RowActionsGridContext<Project>` — invoked by `RowActionsCellRendererComponent`. */
-  edit(project: Project, event?: Event): void {
+  /** Matches `RowActionsGridContext<Contract>` — invoked by `RowActionsCellRendererComponent`. */
+  edit(contract: Contract, event?: Event): void {
     event?.stopPropagation();
-    this.selectedId.set(project.id);
-    this.panel.set({ mode: 'edit', project });
+    this.selectedId.set(contract.id);
+    this.panel.set({ mode: 'edit', contract });
     this.gridApi?.redrawRows();
   }
 
@@ -537,21 +537,21 @@ export class ProjectsPageComponent implements OnInit {
     }
   }
 
-  onPanelSaved(project: Project): void {
-    this.panel.set({ mode: 'view', project });
-    this.selectedId.set(project.id);
+  onPanelSaved(contract: Contract): void {
+    this.panel.set({ mode: 'view', contract });
+    this.selectedId.set(contract.id);
     this.load();
   }
 
-  confirmDelete(project: Project, event?: Event): void {
+  confirmDelete(contract: Contract, event?: Event): void {
     event?.stopPropagation();
 
-    // Projects created without one yet have no project number — fall back to the id
+    // Contracts created without one yet have no contract number — fall back to the id
     // rather than showing a blank/"null" identifier.
-    const label = project.projectNumber ?? `Project #${project.id}`;
+    const label = contract.contractNumber ?? `Contract #${contract.id}`;
 
     const data: ConfirmDialogData = {
-      title: 'Delete project reference?',
+      title: 'Delete contract reference?',
       message: `“${label}” and all of its completion dates will be permanently removed.`,
       confirmLabel: 'Delete',
       destructive: true,
@@ -564,19 +564,19 @@ export class ProjectsPageComponent implements OnInit {
         if (!confirmed) {
           return;
         }
-        this.projects.delete(project.id).subscribe({
+        this.contracts.delete(contract.id).subscribe({
           next: () => {
             this.snackbar.open(`Deleted ${label}`, 'Dismiss', {
               duration: 4000,
               panelClass: 'tidalis-snackbar-success',
             });
-            if (this.panel()?.project?.id === project.id) {
+            if (this.panel()?.contract?.id === contract.id) {
               this.closePanel();
             }
             this.load();
           },
           error: () =>
-            this.snackbar.open('Could not delete the project reference.', 'Dismiss', {
+            this.snackbar.open('Could not delete the contract reference.', 'Dismiss', {
               duration: 6000,
               panelClass: 'tidalis-snackbar-error',
             }),

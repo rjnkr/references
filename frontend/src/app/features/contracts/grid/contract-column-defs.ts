@@ -1,6 +1,6 @@
 import { ColDef } from 'ag-grid-community';
 
-import { PROJECT_TAG_LABELS, Project } from '../../../core/models/project.models';
+import { CONTRACT_TAG_LABELS, Contract } from '../../../core/models/contract.models';
 import { NO_OP_COMPARATOR } from '../../../shared/grid/column-order';
 import { RowActionsCellRendererComponent } from '../../../shared/grid/row-actions-cell-renderer.component';
 import { TagChipsCellRendererComponent } from '../../../shared/grid/tag-chips-cell-renderer.component';
@@ -8,7 +8,7 @@ import { TagChipsCellRendererComponent } from '../../../shared/grid/tag-chips-ce
 /** Column ids the "Columns" visibility menu shows by default; the rest are opt-in. */
 export const DEFAULT_VISIBLE_COLUMN_IDS = [
   'name',
-  'projectNumber',
+  'contractNumber',
   'system',
   'awardDate',
   'implementationPrice',
@@ -22,11 +22,11 @@ export const ACTIONS_COLUMN_ID = 'actions';
  *  restored/persisted selection (a column can be renamed/removed between releases). */
 export const ALL_COLUMN_IDS = [
   'name',
-  'projectNumber',
+  'contractNumber',
   'system',
   'awardDate',
   'endDate',
-  'projectType',
+  'contractType',
   'tags',
   'implementationPrice',
   'currency',
@@ -41,7 +41,7 @@ export const ALL_COLUMN_IDS = [
  *  columns present here are sortable; everything else (derived/joined/count columns) isn't,
  *  matching what the backend can actually order by. */
 export const COLUMN_SORT_KEYS: Record<string, string> = {
-  projectNumber: 'projectNumber',
+  contractNumber: 'contractNumber',
   name: 'name',
   system: 'systemId',
   awardDate: 'awardDate',
@@ -69,10 +69,10 @@ const formatDate = (value: Date | null): string =>
 /**
  * Every column the grid can show, with `hide` set from `visibleColumnIds` — normally the
  * restored (or default) selection from the "Columns" menu, persisted in localStorage by
- * `ProjectsPageComponent`.
+ * `ContractsPageComponent`.
  */
-export function buildProjectColumnDefs(visibleColumnIds: readonly string[]): ColDef<Project>[] {
-  const defs: ColDef<Project>[] = [
+export function buildContractColumnDefs(visibleColumnIds: readonly string[]): ColDef<Contract>[] {
+  const defs: ColDef<Contract>[] = [
     {
       colId: 'name',
       field: 'name',
@@ -89,9 +89,9 @@ export function buildProjectColumnDefs(visibleColumnIds: readonly string[]): Col
       cellClass: 'cell-clip cell-strong',
     },
     {
-      colId: 'projectNumber',
-      field: 'projectNumber',
-      headerName: 'Project #',
+      colId: 'contractNumber',
+      field: 'contractNumber',
+      headerName: 'Contract #',
       width: 150,
       sortable: true,
       comparator: NO_OP_COMPARATOR,
@@ -161,12 +161,12 @@ export function buildProjectColumnDefs(visibleColumnIds: readonly string[]): Col
       floatingFilter: true,
     },
     {
-      colId: 'projectType',
-      headerName: 'Project type',
+      colId: 'contractType',
+      headerName: 'Contract type',
       width: 180,
       sortable: false,
       valueGetter: (params) =>
-        (params.data?.projectType ?? []).map((tag) => PROJECT_TAG_LABELS[tag] ?? tag).join(', '),
+        (params.data?.contractType ?? []).map((tag) => CONTRACT_TAG_LABELS[tag] ?? tag).join(', '),
       filter: 'agTextColumnFilter',
       floatingFilter: true,
       cellClass: 'cell-clip',

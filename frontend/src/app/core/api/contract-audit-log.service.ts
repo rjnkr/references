@@ -3,14 +3,14 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { AuditLogEntry, AuditLogQuery, PagedResult } from '../models/audit-log.model';
+import { ContractAuditLogEntry, ContractAuditLogQuery, PagedResult } from '../models/audit-log.model';
 
 @Injectable({ providedIn: 'root' })
-export class AuditLogService {
+export class ContractAuditLogService {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiBaseUrl;
 
-  list(query: AuditLogQuery): Observable<PagedResult<AuditLogEntry>> {
+  list(query: ContractAuditLogQuery): Observable<PagedResult<ContractAuditLogEntry>> {
     let params = new HttpParams();
 
     const setIfPresent = (key: string, value: unknown) => {
@@ -20,16 +20,18 @@ export class AuditLogService {
       params = params.set(key, String(value));
     };
 
-    setIfPresent('projectId', query.projectId);
+    setIfPresent('contractId', query.contractId);
     setIfPresent('action', query.action);
     setIfPresent('search', query.search?.trim());
     setIfPresent('page', query.page);
     setIfPresent('pageSize', query.pageSize);
 
-    return this.http.get<PagedResult<AuditLogEntry>>(`${this.base}/api/audit-logs`, { params });
+    return this.http.get<PagedResult<ContractAuditLogEntry>>(`${this.base}/api/contract-audit-logs`, {
+      params,
+    });
   }
 
-  get(id: number): Observable<AuditLogEntry> {
-    return this.http.get<AuditLogEntry>(`${this.base}/api/audit-logs/${id}`);
+  get(id: number): Observable<ContractAuditLogEntry> {
+    return this.http.get<ContractAuditLogEntry>(`${this.base}/api/contract-audit-logs/${id}`);
   }
 }

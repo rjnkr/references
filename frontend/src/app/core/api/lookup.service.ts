@@ -99,7 +99,7 @@ export class LookupService {
   /**
    * Drops the cached observable for a lookup table so the next `get*()` call re-fetches
    * it. Called by the reference-data admin screens after a create/update/delete so the
-   * rest of the app (project dropdowns, chips, …) stops serving stale cached rows without
+   * rest of the app (contract dropdowns, chips, …) stops serving stale cached rows without
    * requiring a full page reload.
    */
   invalidate(table: 'currencies' | 'countries' | 'documentTypes' | 'tags' | 'urlTypes' | 'modules'): void {

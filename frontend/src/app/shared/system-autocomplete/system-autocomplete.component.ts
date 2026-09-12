@@ -13,11 +13,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { debounceTime, distinctUntilChanged, filter, of, switchMap, tap } from 'rxjs';
 
 import { SystemService } from '../../core/api/system.service';
-import { SystemRef } from '../../core/models/project.models';
+import { SystemRef } from '../../core/models/contract.models';
 
 /**
- * System picker backed by `GET /api/systems?search=`, used to link a project to the
- * delivered system it relates to (`Project.systemId`).
+ * System picker backed by `GET /api/systems?search=`, used to link a contract to the
+ * delivered system it relates to (`Contract.systemId`).
  *
  * Implemented as a `ControlValueAccessor`, mirroring UnlocodeAutocompleteComponent — its
  * value is the selected system (or null), and the parent form maps it to `systemId` on

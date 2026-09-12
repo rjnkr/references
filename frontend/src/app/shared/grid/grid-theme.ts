@@ -5,7 +5,7 @@ import { themeQuartz } from 'ag-grid-community';
  * instead of hand-copied hex values, so it stays in sync if the brand palette ever changes.
  * `themeQuartz` is the closest stock theme to the flat, compact spreadsheet look the old
  * hand-rolled `mat-table` had — `.withParams()` only needs to nudge density/colour, not
- * replace the whole visual language. Shared by every AG Grid on the site (Projects,
+ * replace the whole visual language. Shared by every AG Grid on the site (Contracts,
  * Systems, ...).
  */
 export const TIDALIS_GRID_THEME = themeQuartz.withParams({

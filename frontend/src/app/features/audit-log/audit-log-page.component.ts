@@ -14,7 +14,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute } from '@angular/router';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 
-import { AuditLogService } from '../../core/api/audit-log.service';
+import { ContractAuditLogService } from '../../core/api/contract-audit-log.service';
 import { SystemAuditLogService } from '../../core/api/system-audit-log.service';
 import { AUDIT_ACTIONS, AUDIT_ACTION_LABELS, AuditAction } from '../../core/models/audit-log.model';
 import { TimezonePreferenceService } from '../../core/services/timezone-preference.service';
@@ -27,8 +27,8 @@ import {
 /**
  * "Audit Trail" — reachable only from the home screen's own tile (there is
  * deliberately no navbar entry, same as Reference Data). Read-only: entries are written
- * internally alongside every project/system create/update/delete (see the backend's
- * `audit-log.util.ts`). A toggle switches between the Project trail and the System trail -
+ * internally alongside every contract/system create/update/delete (see the backend's
+ * `audit-log.util.ts`). A toggle switches between the Contract trail and the System trail -
  * they're two separate tables server-side, since the two entities were split.
  */
 @Component({
@@ -51,7 +51,7 @@ import {
 })
 export class AuditLogPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
-  private readonly projectApi = inject(AuditLogService);
+  private readonly contractApi = inject(ContractAuditLogService);
   private readonly systemApi = inject(SystemAuditLogService);
   private readonly dialog = inject(MatDialog);
   protected readonly tz = inject(TimezonePreferenceService);
@@ -72,21 +72,21 @@ export class AuditLogPageComponent implements OnInit {
   protected readonly searchControl = new FormControl('', { nonNullable: true });
   protected readonly actionControl = new FormControl<AuditAction | ''>('', { nonNullable: true });
 
-  /** Set when the page was opened with `?projectId=…`/`?systemId=…` - scopes the whole
+  /** Set when the page was opened with `?contractId=…`/`?systemId=…` - scopes the whole
    *  trail to one entity and shows a banner explaining that, with a way to clear it. */
   protected readonly scopedId = signal<number | null>(null);
   protected readonly scopedName = signal<string | null>(null);
 
   ngOnInit(): void {
     const kindParam = this.route.snapshot.queryParamMap.get('kind');
-    if (kindParam === 'system' || kindParam === 'project') {
+    if (kindParam === 'system' || kindParam === 'contract') {
       this.kind.set(kindParam);
     }
 
     const idParam =
-      this.route.snapshot.queryParamMap.get(this.kind() === 'system' ? 'systemId' : 'projectId');
+      this.route.snapshot.queryParamMap.get(this.kind() === 'system' ? 'systemId' : 'contractId');
     const nameParam =
-      this.route.snapshot.queryParamMap.get(this.kind() === 'system' ? 'systemName' : 'projectName');
+      this.route.snapshot.queryParamMap.get(this.kind() === 'system' ? 'systemName' : 'contractName');
     if (idParam) {
       this.scopedId.set(Number(idParam));
       this.scopedName.set(nameParam);
@@ -104,7 +104,7 @@ export class AuditLogPageComponent implements OnInit {
     this.load();
   }
 
-  /** Switches between the Project and System trail. Clears whatever single-entity scope
+  /** Switches between the Contract and System trail. Clears whatever single-entity scope
    *  was active - it belonged to the other trail. */
   setKind(kind: AuditLogKind): void {
     if (kind === this.kind()) {
@@ -147,9 +147,9 @@ export class AuditLogPageComponent implements OnInit {
           error: onError,
         });
     } else {
-      this.projectApi
+      this.contractApi
         .list({
-          projectId: this.scopedId() ?? undefined,
+          contractId: this.scopedId() ?? undefined,
           action: this.actionControl.value || undefined,
           search: this.searchControl.value,
           page: this.pageIndex() + 1,

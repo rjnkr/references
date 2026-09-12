@@ -6,7 +6,7 @@
         Connect Claude
       </h1>
       <div class="tidalis-card-subtitle">
-        Let Claude answer questions about project references directly from this database.
+        Let Claude answer questions about contract references directly from this database.
       </div>
     </div>
   </div>
@@ -19,7 +19,7 @@
     <!-- ------------------------------------------------------------------- intro -->
     <p class="claude-lead">
       This application exposes an <strong>MCP</strong> (Model Context Protocol) server, so
-      Claude Desktop, Claude Code and other MCP-compatible clients can query project
+      Claude Desktop, Claude Code and other MCP-compatible clients can query contract
       references, ports, pricing and the reference/lookup tables in natural language —
       without anyone copying data into a chat by hand.
     </p>
@@ -185,10 +185,10 @@
     <div class="claude-security">
       <mat-icon>shield</mat-icon>
       <div>
-        <strong>This key is not scoped per system or project.</strong> Aside from
+        <strong>This key is not scoped per system or contract.</strong> Aside from
         <code>search_reference_systems</code> (which only returns reference-approved,
         non-sensitive systems), every tool above returns full data, including systems and
-        projects marked sensitive. Share the <code>X-MCP-Key</code> only with people and
+        contracts marked sensitive. Share the <code>X-MCP-Key</code> only with people and
         clients that should see everything a signed-in user can see, keep it out of
         version control, and ask your administrator to rotate <code>MCP_API_KEY</code> on
         the server if it may have leaked.

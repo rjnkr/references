@@ -1,7 +1,7 @@
-# Tidalis Project References — Frontend
+# Tidalis Contract References — Frontend
 
-Angular SPA for recording and browsing Tidalis project references: an Excel-like,
-sortable/filterable grid of past projects with a slide-in detail panel covering
+Angular SPA for recording and browsing Tidalis contract references: an Excel-like,
+sortable/filterable grid of past contracts with a slide-in detail panel covering
 financials, scope, ports, modules, people, completion dates and documents.
 
 - **Angular 19** (standalone components, signals, functional guards/interceptors)
@@ -50,7 +50,7 @@ cookie set by the backend.
    — deliberately *not* an Angular router navigation, because the SAML handshake is a
    server-driven redirect chain the SPA takes no part in.
 2. The backend completes SAML, sets the `tidalis_session` cookie, and redirects back to
-   the frontend origin (`FRONTEND_ORIGIN`, i.e. `/`), which routes on to `/projects`.
+   the frontend origin (`FRONTEND_ORIGIN`, i.e. `/`), which routes on to `/contracts`.
 3. On bootstrap, `provideAppInitializer` calls `AuthService.loadCurrentUser()` →
    `GET /api/auth/me`. A 200 stores `{ id, email, name }` in a signal; a 401 means
    "signed out". The initializer resolves *before* the first route activates, so
@@ -86,10 +86,10 @@ session cookie.
 
 The reference data is split across two entities, each with its own screen: `/systems` (the
 delivered system — scope, products, location, ports, modules, sub-systems, external
-interfaces, people, documents) and `/projects` (the commercial deal around it — award date,
-prices, currency, Pipedrive links, completion dates), linked by `Project.systemId`. The two
-features (`features/systems/`, `features/projects/`) mirror each other structurally; the
-notes below describe the Projects screen, but apply the same way to Systems.
+interfaces, people, documents) and `/contracts` (the commercial deal around it — award date,
+prices, currency, Pipedrive links, completion dates), linked by `Contract.systemId`. The two
+features (`features/systems/`, `features/contracts/`) mirror each other structurally; the
+notes below describe the Contracts screen, but apply the same way to Systems.
 
 A `.tidalis-card` holds the grid; clicking a row slides in a `mat-sidenav` (`mode="over"`,
 `position="end"`) with the full detail.
@@ -97,10 +97,10 @@ A `.tidalis-card` holds the grid; clicking a row slides in a `mat-sidenav` (`mod
 **Grid**
 
 - `mat-table` + `MatSort` + `MatPaginator`, sticky header rows, sticky first column
-  (Project #) and sticky action column, cell rules for a spreadsheet feel.
+  (Contract #) and sticky action column, cell rules for a spreadsheet feel.
 - **Columns** button → `mat-menu` of checkboxes. The selection is persisted in
-  `localStorage` under `tidalis.projectReferences.visibleColumns` and survives reloads;
-  unknown keys are dropped so renamed columns degrade gracefully. Defaults: Project #,
+  `localStorage` under `tidalis.contractReferences.visibleColumns` and survives reloads;
+  unknown keys are dropped so renamed columns degrade gracefully. Defaults: Contract #,
   Name, Type, Country, Award date, Implementation price, Currency, Reference. Optional
   columns include Maintenance/yr, Products, Sensitive, Decommissioned, Ports (joined
   codes), Modules (joined names), and counts for ports / completion dates / subsystems /
@@ -112,7 +112,7 @@ A `.tidalis-card` holds the grid; clicking a row slides in a `mat-sidenav` (`mod
 | Control | Where it runs |
 | --- | --- |
 | Global search box (toolbar, 300 ms debounce) | **server** — `search=` |
-| Type / Country / Currency dropdowns | **server** — `projectType=`, `countryId=`, `currencyId=` |
+| Type / Country / Currency dropdowns | **server** — `contractType=`, `countryId=`, `currencyId=` |
 | Sensitive / Reference / Decommissioned tri-state dropdowns | **server** — `isSensitive=`, `canBeUsedAsReference=`, `systemDecommissioned=` |
 | Per-column free-text inputs | **client**, against the page currently loaded (keeps typing instant) |
 | Sorting | **server** — `sort=` |
@@ -124,14 +124,14 @@ When client-side column filters are active the card subtitle says
 > **Contract note — `sort` encoding.** The API contract specifies a single `sort`
 > parameter without pinning its format. This client sends **`sort=<field>:<asc|desc>`**
 > (e.g. `sort=awardDate:desc`). If the backend settles on something else, change the one
-> place that builds it: `ProjectService.encodeSort()` in
-> `src/app/core/api/project.service.ts`. Sort fields are the column `sortKey`s, which use
+> place that builds it: `ContractService.encodeSort()` in
+> `src/app/core/api/contract.service.ts`. Sort fields are the column `sortKey`s, which use
 > the underlying property names (`countryId`, `currencyId`, `awardDate`, …).
 
 **Detail panel** — nine `mat-tab`s over one reactive form (`FormGroup` + `FormArray`s for
 the repeatable sections):
 
-1. **General** — projectNumber, name, projectType, country, awardDate, the three flags
+1. **General** — contractNumber, name, contractType, country, awardDate, the three flags
 2. **Scope & Description** — scope (live word counter, soft-highlighted past ~200 words),
    products, description, newDevelopments, implementationDetails
 3. **Financial** — currency, implementationPrice, maintenancePricePerYear
@@ -141,7 +141,7 @@ the repeatable sections):
 7. **Completion Dates** — repeatable date picker + description
 8. **Documents** — existing documents (type, name, size, uploaded, download, delete) plus
    an upload control (file + document type). In create mode it shows
-   "Save the project first to attach documents."
+   "Save the contract first to attach documents."
 9. **Business** — pipedriveNumber, pipedriveUrl (rendered as a clickable link)
 
 View mode disables the form; **Edit** enables it; **Delete** goes through a confirmation
@@ -179,24 +179,24 @@ src/
 └─ app/
    ├─ app.component.*               Shell: navbar, user menu, footer
    ├─ app.config.ts                 Providers: router, http + interceptors, date adapter, session probe
-   ├─ app.routes.ts                 /login, /projects (guarded), redirects
+   ├─ app.routes.ts                 /login, /contracts (guarded), redirects
    ├─ core/
-   │  ├─ api/{project,system,lookup}.service.ts
+   │  ├─ api/{contract,system,lookup}.service.ts
    │  ├─ auth/{auth.service,auth.guard}.ts
    │  ├─ http/{credentials,auth-error}.interceptor.ts
-   │  ├─ models/{project,system,lookup,user}.model(s).ts
+   │  ├─ models/{contract,system,lookup,user}.model(s).ts
    │  └─ util/date-only.ts          Date-only <-> Date helpers, file-size formatting
    ├─ shared/
    │  ├─ confirm-dialog/
    │  ├─ grid/                      AG Grid setup, theme, column-order + row-actions renderer
    │  ├─ unlocode-autocomplete/     ControlValueAccessor typeahead
-   │  └─ system-autocomplete/       ControlValueAccessor typeahead (links a Project to a System)
+   │  └─ system-autocomplete/       ControlValueAccessor typeahead (links a Contract to a System)
    └─ features/
       ├─ login/
-      ├─ projects/
-      │  ├─ projects-page.component.*        Grid, filters, column visibility, panel host
-      │  ├─ grid/project-column-defs.ts      Column definitions
-      │  └─ project-detail-panel/            Reactive form (commercial fields only)
+      ├─ contracts/
+      │  ├─ contracts-page.component.*        Grid, filters, column visibility, panel host
+      │  ├─ grid/contract-column-defs.ts      Column definitions
+      │  └─ contract-detail-panel/            Reactive form (commercial fields only)
       └─ systems/
          ├─ systems-page.component.*         Grid, filters, column visibility, panel host
          ├─ grid/system-column-defs.ts       Column definitions

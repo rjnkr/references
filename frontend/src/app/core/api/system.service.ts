@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { PagedResult, SortDirection } from '../models/project.models';
+import { PagedResult, SortDirection } from '../models/contract.models';
 import { System, SystemDocument, SystemQuery, SystemWritePayload } from '../models/system.models';
 
 @Injectable({ providedIn: 'root' })
@@ -34,7 +34,7 @@ export class SystemService {
     };
 
     setIfPresent('search', query.search?.trim());
-    setIfPresent('projectType', query.projectType);
+    setIfPresent('contractType', query.contractType);
     setIfPresent('countryId', query.countryId);
     setIfPresent('isSensitive', query.isSensitive);
     setIfPresent('canBeUsedAsReference', query.canBeUsedAsReference);

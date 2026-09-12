@@ -1,6 +1,6 @@
-# Tidalis Project References
+# Tidalis Contract References
 
-Internal application to record Tidalis project references (scope, financials, ports, documents, people involved, etc.).
+Internal application to record Tidalis contract references (scope, financials, ports, documents, people involved, etc.).
 
 ## Structure
 

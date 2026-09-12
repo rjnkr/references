@@ -1,16 +1,16 @@
 import { Currency, DocumentType, Tag, UrlType } from './lookup.models';
 
 /* ====================================================================================
- * Project types — mirrors the API contract implemented by the NestJS backend. A Project
+ * Contract types — mirrors the API contract implemented by the NestJS backend. A Contract
  * is the commercial deal (award date, prices, currency, Pipedrive links, completion
  * dates); the delivered system itself lives on the linked `System` - see `systemId`.
  * ================================================================================== */
 
-export const PROJECT_TYPES = ['PMIS', 'VTS', 'AIS', 'COASTAL', 'PILOT', 'OTHER'] as const;
+export const CONTRACT_TYPES = ['PMIS', 'VTS', 'AIS', 'COASTAL', 'PILOT', 'OTHER'] as const;
 
-export type ProjectType = (typeof PROJECT_TYPES)[number];
+export type ContractType = (typeof CONTRACT_TYPES)[number];
 
-export const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
+export const CONTRACT_TYPE_LABELS: Record<ContractType, string> = {
   PMIS: 'PMIS',
   VTS: 'VTS',
   AIS: 'AIS',
@@ -19,9 +19,9 @@ export const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
   OTHER: 'Other',
 };
 
-/** Multi-select: which phase(s) of work a project covers - `Project.projectType`. Not to
- *  be confused with `System.projectType` (`ProjectType`) above. */
-export const PROJECT_TAGS = [
+/** Multi-select: which phase(s) of work a contract covers - `Contract.contractType`. Not to
+ *  be confused with `System.contractType` (`ContractType`) above. */
+export const CONTRACT_TAGS = [
   'IMPLEMENTATION',
   'SM',
   'PROOF_OF_CONCEPT',
@@ -30,9 +30,9 @@ export const PROJECT_TAGS = [
   'REQUIREMENT_ANALYSIS',
 ] as const;
 
-export type ProjectTag = (typeof PROJECT_TAGS)[number];
+export type ContractTag = (typeof CONTRACT_TAGS)[number];
 
-export const PROJECT_TAG_LABELS: Record<ProjectTag, string> = {
+export const CONTRACT_TAG_LABELS: Record<ContractTag, string> = {
   IMPLEMENTATION: 'Implementation',
   SM: 'Support & Maintenance',
   PROOF_OF_CONCEPT: 'Proof of concept',
@@ -43,27 +43,27 @@ export const PROJECT_TAG_LABELS: Record<ProjectTag, string> = {
 
 /* --- Child collections (as returned by the API) ------------------------------------ */
 
-export interface ProjectCompletionDate {
+export interface ContractCompletionDate {
   id: number;
   /** ISO date, date only (`YYYY-MM-DD`). */
   completionDate: string;
   description?: string;
 }
 
-/** The subset of a System's own fields surfaced on `Project.system` - just enough to
+/** The subset of a System's own fields surfaced on `Contract.system` - just enough to
  *  identify and link to it, without its own nested relations. */
 export interface SystemRef {
   id: number;
   name: string;
 }
 
-export interface ProjectTagAssignment {
+export interface ContractTagAssignment {
   id: number;
   tagId: number;
   tag: Tag;
 }
 
-export interface ProjectUrl {
+export interface ContractUrl {
   id: number;
   urlTypeId: number;
   urlType: UrlType;
@@ -71,7 +71,7 @@ export interface ProjectUrl {
   url: string;
 }
 
-export interface ProjectDocument {
+export interface ContractDocument {
   id: number;
   documentTypeId: number;
   documentType: DocumentType;
@@ -85,21 +85,21 @@ export interface ProjectDocument {
 
 /* --- The main entity --------------------------------------------------------------- */
 
-export interface Project {
+export interface Contract {
   id: number;
-  projectNumber: string | null;
+  contractNumber: string | null;
   name?: string;
   /** ISO date, date only (`YYYY-MM-DD`). */
   awardDate: string;
-  /** ISO date, date only (`YYYY-MM-DD`). Optional - many projects are still ongoing. */
+  /** ISO date, date only (`YYYY-MM-DD`). Optional - many contracts are still ongoing. */
   endDate?: string;
-  projectType: ProjectTag[];
+  contractType: ContractTag[];
   implementationPrice: number;
   maintenancePricePerYear: number;
   currencyId: number;
   currency: Currency;
-  /** System.id this project relates to. Not every project links to a System, and several
-   *  projects (e.g. an implementation plus later maintenance renewals) can link to the
+  /** System.id this contract relates to. Not every contract links to a System, and several
+   *  contracts (e.g. an implementation plus later maintenance renewals) can link to the
    *  same one. */
   systemId: number | null;
   system?: SystemRef | null;
@@ -111,10 +111,10 @@ export interface Project {
   internalNotes?: string;
   createdAt: string;
   updatedAt: string;
-  completionDates: ProjectCompletionDate[];
-  documents: ProjectDocument[];
-  tags: ProjectTagAssignment[];
-  urls: ProjectUrl[];
+  completionDates: ContractCompletionDate[];
+  documents: ContractDocument[];
+  tags: ContractTagAssignment[];
+  urls: ContractUrl[];
 }
 
 /* --- Write payloads ---------------------------------------------------------------- */
@@ -123,12 +123,12 @@ export interface Project {
  * Nested write shape. Child arrays carry only the writable fields (no `id`); when a
  * child array is present the backend replaces that collection wholesale.
  */
-export interface ProjectWritePayload {
-  projectNumber?: string;
+export interface ContractWritePayload {
+  contractNumber?: string;
   name?: string;
   awardDate?: string;
   endDate?: string | null;
-  projectType?: ProjectTag[];
+  contractType?: ContractTag[];
   implementationPrice?: number;
   maintenancePricePerYear?: number;
   currencyId?: number;
@@ -146,11 +146,11 @@ export interface ProjectWritePayload {
 
 export type SortDirection = 'asc' | 'desc';
 
-export interface ProjectQuery {
+export interface ContractQuery {
   search?: string;
   currencyId?: number | null;
   systemId?: number | null;
-  /** `field:asc` / `field:desc` — see ProjectService for the exact encoding. */
+  /** `field:asc` / `field:desc` — see ContractService for the exact encoding. */
   sort?: string;
   page?: number;
   pageSize?: number;

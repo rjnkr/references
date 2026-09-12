@@ -23,7 +23,7 @@
       @if (currentSystem(); as system) {
         <div class="panel__chips">
           <span class="tidalis-chip tidalis-chip--blue">{{
-            projectTypeLabels[system.projectType] || system.projectType
+            contractTypeLabels[system.contractType] || system.contractType
           }}</span>
           @if (system.country && system.country.name) {
             <span class="tidalis-chip tidalis-chip--grey">{{ system.country.name }}</span>
@@ -140,12 +140,12 @@
             <div class="col-12 col-md-4">
               <mat-form-field appearance="outline">
                 <mat-label>Type</mat-label>
-                <mat-select formControlName="projectType">
-                  @for (type of projectTypes; track type) {
-                    <mat-option [value]="type">{{ projectTypeLabels[type] }}</mat-option>
+                <mat-select formControlName="contractType">
+                  @for (type of contractTypes; track type) {
+                    <mat-option [value]="type">{{ contractTypeLabels[type] }}</mat-option>
                   }
                 </mat-select>
-                @if (form.get('projectType')?.hasError('required')) {
+                @if (form.get('contractType')?.hasError('required')) {
                   <mat-error>Type is required</mat-error>
                 }
               </mat-form-field>

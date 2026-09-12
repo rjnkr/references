@@ -216,7 +216,7 @@
     }
   }
 
-  /* While the project detail is being fetched. */
+  /* While the contract detail is being fetched. */
   &.is-loading {
     background: var(--map-loading-fill);
     animation: map-marker-pulse 900ms ease-in-out infinite;

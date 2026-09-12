@@ -73,28 +73,28 @@ export class ClaudeIntegrationPageComponent {
   protected readonly tools: McpTool[] = [
     {
       name: 'list_systems',
-      args: 'search?, projectType?, countryId?, limit?',
+      args: 'search?, contractType?, countryId?, limit?',
       returns: 'Compact system summaries',
     },
     {
       name: 'get_system',
       args: 'id',
-      returns: 'One fully expanded system, with its linked projects',
+      returns: 'One fully expanded system, with its linked contracts',
     },
     {
       name: 'search_reference_systems',
-      args: 'query, projectType?, limit?',
+      args: 'query, contractType?, limit?',
       returns: 'Quotable reference systems only',
     },
     {
-      name: 'list_projects',
+      name: 'list_contracts',
       args: 'search?, systemId?, limit?',
       returns: 'Compact commercial-deal summaries',
     },
     {
-      name: 'get_project',
-      args: 'id? or projectNumber?',
-      returns: 'One fully expanded project',
+      name: 'get_contract',
+      args: 'id? or contractNumber?',
+      returns: 'One fully expanded contract',
     },
     { name: 'list_currencies', args: '–', returns: 'Currency lookup' },
     { name: 'list_countries', args: '–', returns: 'Country lookup' },
@@ -105,8 +105,8 @@ export class ClaudeIntegrationPageComponent {
   protected readonly examplePrompts = [
     'Do we have a VTS system in Belgium we can use as a reference?',
     'List every coastal radar system delivered in the last two years.',
-    'Give me the full details of project TID-2024-017.',
-    'What currencies can project prices be recorded in?',
+    'Give me the full details of contract TID-2024-017.',
+    'What currencies can contract prices be recorded in?',
     'What is the UN/LOCODE for Rotterdam?',
   ];
 

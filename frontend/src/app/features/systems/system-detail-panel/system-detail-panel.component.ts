@@ -24,7 +24,7 @@ import { DatePipe } from '@angular/common';
 
 import { LookupService } from '../../../core/api/lookup.service';
 import { SystemService } from '../../../core/api/system.service';
-import { PROJECT_TYPES, PROJECT_TYPE_LABELS, ProjectType } from '../../../core/models/project.models';
+import { CONTRACT_TYPES, CONTRACT_TYPE_LABELS, ContractType } from '../../../core/models/contract.models';
 import { Module, Tag, UnLocode } from '../../../core/models/lookup.models';
 import {
   System,
@@ -59,7 +59,7 @@ const SCOPE_SOFT_WORD_LIMIT = 200;
  * the user cannot currently see.
  */
 const TAB_CONTROLS: string[][] = [
-  ['name', 'systemUnlocode', 'projectType', 'countryId', 'tags'],
+  ['name', 'systemUnlocode', 'contractType', 'countryId', 'tags'],
   ['scope', 'products', 'description', 'internalNotes'],
   ['ports'],
   ['modules', 'subSystems', 'externalInterfaces'],
@@ -130,8 +130,8 @@ export class SystemDetailPanelComponent {
   /** Raised when documents change, so the list can refresh its counts. */
   @Output() readonly documentsChanged = new EventEmitter<void>();
 
-  protected readonly projectTypes = PROJECT_TYPES;
-  protected readonly projectTypeLabels = PROJECT_TYPE_LABELS;
+  protected readonly contractTypes = CONTRACT_TYPES;
+  protected readonly contractTypeLabels = CONTRACT_TYPE_LABELS;
   protected readonly scopeSoftLimit = SCOPE_SOFT_WORD_LIMIT;
   protected readonly formatFileSize = formatFileSize;
 
@@ -153,7 +153,7 @@ export class SystemDetailPanelComponent {
   protected readonly form: FormGroup = this.fb.group({
     /* General */
     name: ['', [Validators.required, Validators.maxLength(100)]],
-    projectType: [null as ProjectType | null, [Validators.required]],
+    contractType: [null as ContractType | null, [Validators.required]],
     countryId: [null as number | null, [Validators.required]],
     systemUnlocode: [null as UnLocode | null, [Validators.required]],
     isSensitive: [false],
@@ -276,7 +276,7 @@ export class SystemDetailPanelComponent {
     this.form.reset(
       {
         name: '',
-        projectType: null,
+        contractType: null,
         countryId: null,
         systemUnlocode: null,
         isSensitive: false,
@@ -312,7 +312,7 @@ export class SystemDetailPanelComponent {
     this.form.patchValue(
       {
         name: system.name ?? '',
-        projectType: system.projectType ?? null,
+        contractType: system.contractType ?? null,
         countryId: system.countryId ?? null,
         systemUnlocode: system.systemUnlocode ?? null,
         isSensitive: !!system.isSensitive,
@@ -485,7 +485,7 @@ export class SystemDetailPanelComponent {
     return {
       name: text(value.name),
       scope: text(value.scope),
-      projectType: value.projectType,
+      contractType: value.contractType,
       products: text(value.products),
       description: optional(value.description),
       customerDetails: optional(value.customerDetails),

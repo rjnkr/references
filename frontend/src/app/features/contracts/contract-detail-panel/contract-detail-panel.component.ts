@@ -20,17 +20,17 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { DatePipe } from '@angular/common';
 
 import { LookupService } from '../../../core/api/lookup.service';
-import { ProjectService } from '../../../core/api/project.service';
+import { ContractService } from '../../../core/api/contract.service';
 import { Tag } from '../../../core/models/lookup.models';
 import {
-  PROJECT_TAGS,
-  PROJECT_TAG_LABELS,
-  Project,
-  ProjectDocument,
-  ProjectTag,
-  ProjectWritePayload,
+  CONTRACT_TAGS,
+  CONTRACT_TAG_LABELS,
+  Contract,
+  ContractDocument,
+  ContractTag,
+  ContractWritePayload,
   SystemRef,
-} from '../../../core/models/project.models';
+} from '../../../core/models/contract.models';
 import { formatFileSize, parseDateOnly, toDateOnlyString } from '../../../core/util/date-only';
 import {
   ConfirmDialogComponent,
@@ -46,9 +46,9 @@ export type DetailPanelMode = 'view' | 'edit' | 'create';
  * list produces a fresh identity — a plain `mode` input would be dirty-checked by value
  * and so could be skipped after the panel had switched itself into edit mode.
  */
-export interface ProjectPanelState {
+export interface ContractPanelState {
   mode: DetailPanelMode;
-  project: Project | null;
+  contract: Contract | null;
 }
 
 /**
@@ -57,11 +57,11 @@ export interface ProjectPanelState {
  */
 const TAB_CONTROLS: string[][] = [
   [
-    'projectNumber',
+    'contractNumber',
     'name',
     'awardDate',
     'endDate',
-    'projectType',
+    'contractType',
     'system',
     'tags',
     'pipedriveNumber',
@@ -76,7 +76,7 @@ const TAB_CONTROLS: string[][] = [
 ];
 
 @Component({
-  selector: 'app-project-detail-panel',
+  selector: 'app-contract-detail-panel',
   imports: [
     DatePipe,
     ReactiveFormsModule,
@@ -92,12 +92,12 @@ const TAB_CONTROLS: string[][] = [
     MatProgressBarModule,
     SystemAutocompleteComponent,
   ],
-  templateUrl: './project-detail-panel.component.html',
-  styleUrl: './project-detail-panel.component.scss',
+  templateUrl: './contract-detail-panel.component.html',
+  styleUrl: './contract-detail-panel.component.scss',
 })
-export class ProjectDetailPanelComponent {
+export class ContractDetailPanelComponent {
   private readonly fb = inject(FormBuilder);
-  private readonly api = inject(ProjectService);
+  private readonly api = inject(ContractService);
   private readonly dialog = inject(MatDialog);
   private readonly snackbar = inject(MatSnackBar);
   protected readonly lookups = inject(LookupService);
@@ -107,21 +107,21 @@ export class ProjectDetailPanelComponent {
    * reactive when the panel flips between view and edit mode from inside the component.
    */
   private readonly _mode = signal<DetailPanelMode>('view');
-  private lastProjectId: number | null = null;
+  private lastContractId: number | null = null;
 
   @Input({ required: true })
-  set state(value: ProjectPanelState) {
-    const isDifferentProject = (value.project?.id ?? null) !== this.lastProjectId;
+  set state(value: ContractPanelState) {
+    const isDifferentContract = (value.contract?.id ?? null) !== this.lastContractId;
 
     this._mode.set(value.mode);
-    this.currentProject.set(value.project);
-    this.patchForm(value.project);
+    this.currentContract.set(value.contract);
+    this.patchForm(value.contract);
     this.applyMode();
 
-    if (isDifferentProject || value.mode === 'create') {
+    if (isDifferentContract || value.mode === 'create') {
       this.tabIndex.set(0);
       this.selectedFile.set(null);
-      this.lastProjectId = value.project?.id ?? null;
+      this.lastContractId = value.contract?.id ?? null;
     }
   }
 
@@ -130,32 +130,32 @@ export class ProjectDetailPanelComponent {
   }
 
   @Output() readonly closed = new EventEmitter<void>();
-  @Output() readonly saved = new EventEmitter<Project>();
-  @Output() readonly deleteRequested = new EventEmitter<Project>();
+  @Output() readonly saved = new EventEmitter<Contract>();
+  @Output() readonly deleteRequested = new EventEmitter<Contract>();
   /** Raised when documents change, so the list can refresh its counts. */
   @Output() readonly documentsChanged = new EventEmitter<void>();
 
   protected readonly saving = signal(false);
   protected readonly uploading = signal(false);
-  protected readonly documents = signal<ProjectDocument[]>([]);
+  protected readonly documents = signal<ContractDocument[]>([]);
   protected readonly selectedFile = signal<File | null>(null);
   protected readonly uploadDocumentTypeId = signal<number | null>(null);
-  protected readonly currentProject = signal<Project | null>(null);
+  protected readonly currentContract = signal<Contract | null>(null);
   protected readonly tabIndex = signal(0);
 
-  protected readonly projectTags = PROJECT_TAGS;
-  protected readonly projectTagLabels = PROJECT_TAG_LABELS;
+  protected readonly contractTags = CONTRACT_TAGS;
+  protected readonly contractTagLabels = CONTRACT_TAG_LABELS;
   protected readonly formatFileSize = formatFileSize;
 
   protected readonly isReadonly = computed(() => this._mode() === 'view');
 
   protected readonly form: FormGroup = this.fb.group({
     /* General */
-    projectNumber: ['', [Validators.maxLength(60)]],
+    contractNumber: ['', [Validators.maxLength(60)]],
     name: ['', [Validators.maxLength(100)]],
     awardDate: [null as Date | null, [Validators.required]],
     endDate: [null as Date | null],
-    projectType: [[] as ProjectTag[]],
+    contractType: [[] as ContractTag[]],
     system: [null as SystemRef | null],
     tags: [[] as number[]],
     pipedriveNumber: [''],
@@ -188,7 +188,7 @@ export class ProjectDetailPanelComponent {
   }
 
   /** The currently selected tags, resolved against the tags lookup — read live off the
-   *  form so the chip row reflects in-progress edits, not just the saved project. */
+   *  form so the chip row reflects in-progress edits, not just the saved contract. */
   selectedTags(): Tag[] {
     const ids = (this.form.get('tags')?.value ?? []) as number[];
     const byId = new Map(this.lookups.tags().map((tag) => [tag.id, tag]));
@@ -203,14 +203,14 @@ export class ProjectDetailPanelComponent {
     }
   }
 
-  private patchForm(project: Project | null): void {
+  private patchForm(contract: Contract | null): void {
     this.form.reset(
       {
-        projectNumber: '',
+        contractNumber: '',
         name: '',
         awardDate: null,
         endDate: null,
-        projectType: [],
+        contractType: [],
         system: null,
         tags: [],
         pipedriveNumber: '',
@@ -227,42 +227,42 @@ export class ProjectDetailPanelComponent {
     this.completionDates.clear({ emitEvent: false });
     this.urls.clear({ emitEvent: false });
 
-    if (!project) {
+    if (!contract) {
       this.documents.set([]);
       return;
     }
 
     this.form.patchValue(
       {
-        projectNumber: project.projectNumber ?? '',
-        name: project.name ?? '',
-        awardDate: parseDateOnly(project.awardDate),
-        endDate: parseDateOnly(project.endDate),
-        projectType: project.projectType ?? [],
-        system: project.system ?? null,
-        tags: (project.tags ?? []).map((assignment) => assignment.tagId),
-        pipedriveNumber: project.pipedriveNumber ?? '',
-        implementationPrice: project.implementationPrice ?? null,
-        maintenancePricePerYear: project.maintenancePricePerYear ?? null,
-        currencyId: project.currencyId ?? null,
-        newDevelopments: project.newDevelopments ?? '',
-        implementationDetails: project.implementationDetails ?? '',
-        internalNotes: project.internalNotes ?? '',
+        contractNumber: contract.contractNumber ?? '',
+        name: contract.name ?? '',
+        awardDate: parseDateOnly(contract.awardDate),
+        endDate: parseDateOnly(contract.endDate),
+        contractType: contract.contractType ?? [],
+        system: contract.system ?? null,
+        tags: (contract.tags ?? []).map((assignment) => assignment.tagId),
+        pipedriveNumber: contract.pipedriveNumber ?? '',
+        implementationPrice: contract.implementationPrice ?? null,
+        maintenancePricePerYear: contract.maintenancePricePerYear ?? null,
+        currencyId: contract.currencyId ?? null,
+        newDevelopments: contract.newDevelopments ?? '',
+        implementationDetails: contract.implementationDetails ?? '',
+        internalNotes: contract.internalNotes ?? '',
       },
       { emitEvent: false },
     );
 
-    (project.completionDates ?? []).forEach((entry) =>
+    (contract.completionDates ?? []).forEach((entry) =>
       this.completionDates.push(
         this.newCompletionDateGroup(parseDateOnly(entry.completionDate), entry.description),
       ),
     );
 
-    (project.urls ?? []).forEach((entry) =>
+    (contract.urls ?? []).forEach((entry) =>
       this.urls.push(this.newUrlGroup(entry.urlTypeId, entry.description, entry.url)),
     );
 
-    this.documents.set(project.documents ?? []);
+    this.documents.set(contract.documents ?? []);
   }
 
   /* --- Row factories -------------------------------------------------------------- */
@@ -330,7 +330,7 @@ export class ProjectDetailPanelComponent {
     }
 
     const payload = this.buildPayload();
-    const existing = this.currentProject();
+    const existing = this.currentContract();
     const wasCreate = this.mode === 'create';
     this.saving.set(true);
 
@@ -340,22 +340,22 @@ export class ProjectDetailPanelComponent {
         : this.api.update(existing.id, payload);
 
     request$.subscribe({
-      next: (project) => {
+      next: (contract) => {
         this.saving.set(false);
-        this.currentProject.set(project);
-        this.documents.set(project.documents ?? []);
+        this.currentContract.set(contract);
+        this.documents.set(contract.documents ?? []);
         // Drop back to read-only immediately; the parent re-binds `state` as well, but
         // doing it here keeps the panel correct even if the parent chooses not to.
         this._mode.set('view');
-        this.lastProjectId = project.id;
-        // No project number yet is a valid state now — fall back to the id, which is
+        this.lastContractId = contract.id;
+        // No contract number yet is a valid state now — fall back to the id, which is
         // always present, rather than showing a blank/"null" identifier.
-        const label = project.projectNumber ?? `Project #${project.id}`;
+        const label = contract.contractNumber ?? `Contract #${contract.id}`;
         this.snackbar.open(wasCreate ? `Created ${label}` : `Saved ${label}`, 'Dismiss', {
           duration: 4000,
           panelClass: 'tidalis-snackbar-success',
         });
-        this.saved.emit(project);
+        this.saved.emit(contract);
       },
       error: (error: unknown) => {
         this.saving.set(false);
@@ -367,18 +367,18 @@ export class ProjectDetailPanelComponent {
     });
   }
 
-  private buildPayload(): ProjectWritePayload {
+  private buildPayload(): ContractWritePayload {
     const value = this.form.getRawValue();
 
     const text = (input: unknown): string => (typeof input === 'string' ? input.trim() : '');
     const optional = (input: unknown): string | null => text(input) || null;
 
     return {
-      projectNumber: text(value.projectNumber),
+      contractNumber: text(value.contractNumber),
       name: text(value.name),
       awardDate: toDateOnlyString(value.awardDate) ?? undefined,
       endDate: toDateOnlyString(value.endDate),
-      projectType: (value.projectType ?? []) as ProjectTag[],
+      contractType: (value.contractType ?? []) as ContractTag[],
       systemId: (value.system as SystemRef | null)?.id ?? null,
       tags: (value.tags ?? []) as number[],
       implementationPrice: Number(value.implementationPrice),
@@ -407,7 +407,7 @@ export class ProjectDetailPanelComponent {
   }
 
   cancel(): void {
-    const existing = this.currentProject();
+    const existing = this.currentContract();
     if (this.mode === 'create' || !existing) {
       this.closed.emit();
       return;
@@ -424,7 +424,7 @@ export class ProjectDetailPanelComponent {
   }
 
   requestDelete(): void {
-    const existing = this.currentProject();
+    const existing = this.currentContract();
     if (existing) {
       this.deleteRequested.emit(existing);
     }
@@ -449,16 +449,16 @@ export class ProjectDetailPanelComponent {
   }
 
   uploadDocument(input?: HTMLInputElement): void {
-    const project = this.currentProject();
+    const contract = this.currentContract();
     const file = this.selectedFile();
     const documentTypeId = this.uploadDocumentTypeId();
 
-    if (!project || !file || documentTypeId === null) {
+    if (!contract || !file || documentTypeId === null) {
       return;
     }
 
     this.uploading.set(true);
-    this.api.uploadDocument(project.id, file, documentTypeId).subscribe({
+    this.api.uploadDocument(contract.id, file, documentTypeId).subscribe({
       next: () => {
         this.uploading.set(false);
         this.clearSelectedFile(input);
@@ -466,7 +466,7 @@ export class ProjectDetailPanelComponent {
           duration: 4000,
           panelClass: 'tidalis-snackbar-success',
         });
-        this.reloadDocuments(project.id);
+        this.reloadDocuments(contract.id);
       },
       error: (error: unknown) => {
         this.uploading.set(false);
@@ -479,19 +479,19 @@ export class ProjectDetailPanelComponent {
   }
 
   downloadUrl(documentId: number): string {
-    const project = this.currentProject();
-    return project ? this.api.documentDownloadUrl(project.id, documentId) : '';
+    const contract = this.currentContract();
+    return contract ? this.api.documentDownloadUrl(contract.id, documentId) : '';
   }
 
-  deleteDocument(doc: ProjectDocument): void {
-    const project = this.currentProject();
-    if (!project) {
+  deleteDocument(doc: ContractDocument): void {
+    const contract = this.currentContract();
+    if (!contract) {
       return;
     }
 
     const data: ConfirmDialogData = {
       title: 'Delete document?',
-      message: `“${doc.fileName}” will be permanently removed from this project.`,
+      message: `“${doc.fileName}” will be permanently removed from this contract.`,
       confirmLabel: 'Delete',
       destructive: true,
     };
@@ -503,13 +503,13 @@ export class ProjectDetailPanelComponent {
         if (!confirmed) {
           return;
         }
-        this.api.deleteDocument(project.id, doc.id).subscribe({
+        this.api.deleteDocument(contract.id, doc.id).subscribe({
           next: () => {
             this.snackbar.open('Document deleted.', 'Dismiss', {
               duration: 4000,
               panelClass: 'tidalis-snackbar-success',
             });
-            this.reloadDocuments(project.id);
+            this.reloadDocuments(contract.id);
           },
           error: (error: unknown) =>
             this.snackbar.open(extractErrorMessage(error), 'Dismiss', {
@@ -520,12 +520,12 @@ export class ProjectDetailPanelComponent {
       });
   }
 
-  /** Re-reads the project so the document list (and the list's counts) stay accurate. */
-  private reloadDocuments(projectId: number): void {
-    this.api.get(projectId).subscribe({
-      next: (project) => {
-        this.currentProject.set(project);
-        this.documents.set(project.documents ?? []);
+  /** Re-reads the contract so the document list (and the list's counts) stay accurate. */
+  private reloadDocuments(contractId: number): void {
+    this.api.get(contractId).subscribe({
+      next: (contract) => {
+        this.currentContract.set(contract);
+        this.documents.set(contract.documents ?? []);
         this.documentsChanged.emit();
       },
       error: () => this.documentsChanged.emit(),
@@ -544,7 +544,7 @@ function extractErrorMessage(error: unknown): string {
   }
   const status = (error as { status?: number } | null)?.status;
   if (status === 409) {
-    return 'That project number already exists.';
+    return 'That contract number already exists.';
   }
   return 'The request failed. Please try again.';
 }

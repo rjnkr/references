@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community';
 
-/** Renders a value (the project type's label) as the same blue pill used elsewhere in the app. */
+/** Renders a value (the contract type's label) as the same blue pill used elsewhere in the app. */
 @Component({
   selector: 'app-enum-chip-cell-renderer',
   template: `

@@ -4,24 +4,24 @@
 
 /* The sidenav container owns the vertical space so the grid can scroll internally with
    a sticky header — the Excel feel. */
-.projects-shell {
+.contracts-shell {
   height: calc(100vh - var(--tidalis-navbar-height) - var(--tidalis-footer-height) - 48px);
   min-height: 480px;
   background: transparent;
 }
 
-.projects-content {
+.contracts-content {
   overflow: hidden;
   background: transparent;
 }
 
-.projects-panel {
+.contracts-panel {
   width: min(1060px, 96vw);
   border-left: 3px solid var(--tidalis-blue);
   box-shadow: var(--tidalis-shadow-lg);
 }
 
-.projects-card {
+.contracts-card {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -29,23 +29,23 @@
 
 /* -------------------------------------------------------------------------- toolbar */
 
-.projects-heading {
+.contracts-heading {
   min-width: 220px;
 }
 
-.projects-toolbar {
+.contracts-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
 
-.projects-progress {
+.contracts-progress {
   --mdc-linear-progress-active-indicator-color: var(--tidalis-orange);
   height: 3px;
 }
 
-.projects-error {
+.contracts-error {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -65,20 +65,20 @@
 /* ----------------------------------------------------------------------------- grid */
 
 /* The card is a flex column: header → grid (scrolls) → paginator (pinned at bottom). */
-.projects-body {
+.contracts-body {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
 }
 
-.projects-grid {
+.contracts-grid {
   flex: 1 1 auto;
   min-height: 0;
   border-bottom: 1px solid var(--tidalis-border);
 }
 
-.projects-ag-grid {
+.contracts-ag-grid {
   width: 100%;
   height: 100%;
 }
@@ -87,10 +87,10 @@
  * AG Grid renders its cells through its own internal mechanism, not this component's
  * Angular template — Angular's (emulated, scoped) style encapsulation never reaches them,
  * hence `::ng-deep` throughout this section. Classes applied via `cellClass`/`headerClass`
- * in `project-column-defs.ts`; the cell *renderer components* (project number, chips, row
+ * in `contract-column-defs.ts`; the cell *renderer components* (contract number, chips, row
  * actions) carry their own self-contained styles instead, for the same reason.
  */
-:host ::ng-deep .projects-ag-grid {
+:host ::ng-deep .contracts-ag-grid {
   .ag-row {
     cursor: pointer;
   }
@@ -113,7 +113,7 @@
     text-align: center;
   }
 
-  .project-row--selected {
+  .contract-row--selected {
     background: var(--tidalis-row-selected) !important;
     box-shadow: inset 2px 0 0 var(--tidalis-blue);
   }
@@ -156,7 +156,7 @@
 
 /* --------------------------------------------------------------------------- empty state */
 
-.projects-empty {
+.contracts-empty {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -175,12 +175,12 @@
 }
 
 @media (max-width: 991.98px) {
-  .projects-shell {
+  .contracts-shell {
     height: auto;
     min-height: calc(100vh - var(--tidalis-navbar-height) - var(--tidalis-footer-height) - 48px);
   }
 
-  .projects-grid {
+  .contracts-grid {
     max-height: 62vh;
   }
 }

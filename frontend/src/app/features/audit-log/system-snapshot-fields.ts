@@ -2,7 +2,7 @@ import { SnapshotField, bool, namedList, relation, text } from './snapshot-forma
 
 export const SYSTEM_SNAPSHOT_FIELDS: SnapshotField[] = [
   { key: 'name', label: 'Name', format: text },
-  { key: 'projectType', label: 'Type', format: text },
+  { key: 'contractType', label: 'Type', format: text },
   { key: 'country', label: 'Country', format: relation(['name', 'isoCode']) },
   { key: 'systemUnlocode', label: 'System UN/LOCODE', format: relation(['code', 'name']) },
   { key: 'scope', label: 'Scope', format: text },

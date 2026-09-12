@@ -6,12 +6,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { ProjectService } from '../../../core/api/project.service';
+import { ContractService } from '../../../core/api/contract.service';
 import { SystemService } from '../../../core/api/system.service';
 import { AUDIT_ACTION_LABELS } from '../../../core/models/audit-log.model';
 import { TimezonePreferenceService } from '../../../core/services/timezone-preference.service';
 import { AnyAuditLogEntry, auditEntryLabel } from '../audit-log-entry.model';
-import { PROJECT_SNAPSHOT_FIELDS } from '../project-snapshot-fields';
+import { CONTRACT_SNAPSHOT_FIELDS } from '../contract-snapshot-fields';
 import { SnapshotField } from '../snapshot-format';
 import { SYSTEM_SNAPSHOT_FIELDS } from '../system-snapshot-fields';
 
@@ -29,7 +29,7 @@ interface DiffRow {
 /**
  * Full before/full after comparison for one audit entry. A CREATE only ever has an
  * "after" snapshot, a DELETE only a "before" one (the entity's last known state) - both
- * render as a single value column rather than a comparison. Works for both the Project
+ * render as a single value column rather than a comparison. Works for both the Contract
  * and System trail, picking the matching snapshot-field list and restore endpoint from
  * `data.entry.kind`.
  */
@@ -40,7 +40,7 @@ interface DiffRow {
   styleUrl: './audit-log-detail-dialog.component.scss',
 })
 export class AuditLogDetailDialogComponent {
-  private readonly projects = inject(ProjectService);
+  private readonly contracts = inject(ContractService);
   private readonly systems = inject(SystemService);
   private readonly snackbar = inject(MatSnackBar);
   protected readonly tz = inject(TimezonePreferenceService);
@@ -96,8 +96,8 @@ export class AuditLogDetailDialogComponent {
         error: onFailure,
       });
     } else {
-      this.projects.restore(entry.projectId).subscribe({
-        next: (restored) => onSuccess(restored.projectNumber ?? restored.id),
+      this.contracts.restore(entry.contractId).subscribe({
+        next: (restored) => onSuccess(restored.contractNumber ?? restored.id),
         error: onFailure,
       });
     }
@@ -106,7 +106,7 @@ export class AuditLogDetailDialogComponent {
   private buildRows(): DiffRow[] {
     const { beforeData, afterData, changedFields, kind } = this.data.entry;
     const changed = new Set(changedFields ?? []);
-    const fields: SnapshotField[] = kind === 'system' ? SYSTEM_SNAPSHOT_FIELDS : PROJECT_SNAPSHOT_FIELDS;
+    const fields: SnapshotField[] = kind === 'system' ? SYSTEM_SNAPSHOT_FIELDS : CONTRACT_SNAPSHOT_FIELDS;
 
     const rows: DiffRow[] = [];
     for (const field of fields) {
@@ -130,7 +130,7 @@ export class AuditLogDetailDialogComponent {
   }
 }
 
-function extractErrorMessage(error: unknown, kind: 'project' | 'system'): string {
+function extractErrorMessage(error: unknown, kind: 'contract' | 'system'): string {
   const body = (error as { error?: { message?: string | string[] } } | null)?.error;
   const message = body?.message;
   if (Array.isArray(message) && message.length > 0) {
@@ -140,8 +140,8 @@ function extractErrorMessage(error: unknown, kind: 'project' | 'system'): string
     return message;
   }
   const status = (error as { status?: number } | null)?.status;
-  if (status === 409 && kind === 'project') {
-    return 'Cannot restore: another project now uses this project number.';
+  if (status === 409 && kind === 'contract') {
+    return 'Cannot restore: another contract now uses this contract number.';
   }
   return `Could not restore the ${kind}. Please try again.`;
 }

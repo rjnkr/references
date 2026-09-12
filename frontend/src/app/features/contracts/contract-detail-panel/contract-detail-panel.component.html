@@ -4,24 +4,24 @@
     <div class="panel__titles">
       <div class="panel__eyebrow">
         @if (mode === 'create') {
-          New project reference
+          New contract reference
         } @else if (mode === 'edit') {
-          Editing project reference
+          Editing contract reference
         } @else {
-          Project reference
+          Contract reference
         }
       </div>
 
       <h2 class="panel__title">
         @if (mode === 'create') {
-          Add a project
+          Add a contract
         } @else {
-          @if (currentProject()?.projectNumber; as number) {
+          @if (currentContract()?.contractNumber; as number) {
             <span class="panel__number">{{ number }}</span>
             <span class="panel__sep">·</span>
           }
           <span>{{
-            currentProject()?.name || currentProject()?.system?.name || 'No linked system'
+            currentContract()?.name || currentContract()?.system?.name || 'No linked system'
           }}</span>
         }
       </h2>
@@ -38,7 +38,7 @@
           type="button"
           class="panel__delete"
           (click)="requestDelete()"
-          matTooltip="Delete this project reference"
+          matTooltip="Delete this contract reference"
         >
           <mat-icon>delete_outline</mat-icon>
           <span class="d-none d-lg-inline">Delete</span>
@@ -122,14 +122,14 @@
                 <div class="col-12 col-md-6">
                   <app-system-autocomplete
                     formControlName="system"
-                    hint="The delivered system this project relates to, if any"
+                    hint="The delivered system this contract relates to, if any"
                   ></app-system-autocomplete>
                 </div>
 
                 <div class="col-12 col-md-3">
                   <mat-form-field appearance="outline">
-                    <mat-label>Project number</mat-label>
-                    <input matInput formControlName="projectNumber" maxlength="60" />
+                    <mat-label>Contract number</mat-label>
+                    <input matInput formControlName="contractNumber" maxlength="60" />
                   </mat-form-field>
                 </div>
 
@@ -156,10 +156,10 @@
 
                 <div class="col-12 col-md-3">
                   <mat-form-field appearance="outline">
-                    <mat-label>Project type</mat-label>
-                    <mat-select formControlName="projectType" multiple>
-                      @for (tag of projectTags; track tag) {
-                        <mat-option [value]="tag">{{ projectTagLabels[tag] }}</mat-option>
+                    <mat-label>Contract type</mat-label>
+                    <mat-select formControlName="contractType" multiple>
+                      @for (tag of contractTags; track tag) {
+                        <mat-option [value]="tag">{{ contractTagLabels[tag] }}</mat-option>
                       }
                     </mat-select>
                   </mat-form-field>
@@ -184,11 +184,11 @@
                 </div>
               </div>
 
-              @if (currentProject(); as project) {
+              @if (currentContract(); as contract) {
                 <mat-divider></mat-divider>
                 <div class="panel__meta">
-                  <span>Created {{ project.createdAt | date: 'dd MMM yyyy, HH:mm' }}</span>
-                  <span>Last updated {{ project.updatedAt | date: 'dd MMM yyyy, HH:mm' }}</span>
+                  <span>Created {{ contract.createdAt | date: 'dd MMM yyyy, HH:mm' }}</span>
+                  <span>Last updated {{ contract.updatedAt | date: 'dd MMM yyyy, HH:mm' }}</span>
                 </div>
               }
             </div>
@@ -473,10 +473,10 @@
           </ng-template>
 
           <div class="tab-content">
-            @if (!currentProject()) {
+            @if (!currentContract()) {
               <div class="soft-warning">
                 <mat-icon>info</mat-icon>
-                <span>Save the project first to attach documents.</span>
+                <span>Save the contract first to attach documents.</span>
               </div>
             } @else {
               <div class="doc-table-wrap tidalis-scroll-x">

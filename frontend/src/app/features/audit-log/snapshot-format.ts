@@ -1,7 +1,7 @@
 /**
  * How to render one field of an audit snapshot (`beforeData`/`afterData`) in the
  * before/after comparison — a config list rather than a hand-written template per field.
- * Shared by `project-snapshot-fields.ts` and `system-snapshot-fields.ts`.
+ * Shared by `contract-snapshot-fields.ts` and `system-snapshot-fields.ts`.
  */
 export interface SnapshotField {
   key: string;

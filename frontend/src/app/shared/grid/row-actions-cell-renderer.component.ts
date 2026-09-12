@@ -18,7 +18,7 @@ export interface RowActionsGridContext<T> {
 }
 
 /**
- * Edit / Delete buttons, pinned to the right. Shared by every AG Grid on the site (Projects,
+ * Edit / Delete buttons, pinned to the right. Shared by every AG Grid on the site (Contracts,
  * Systems, ...) — generic over the row type `T` so each grid's page component only needs an
  * `edit`/`confirmDelete` pair matching its own entity.
  */

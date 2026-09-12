@@ -5,24 +5,24 @@ import { authGuard, loginPageGuard } from './core/auth/auth.guard';
 export const routes: Routes = [
   {
     path: 'login',
-    title: 'Sign in · Tidalis Project References',
+    title: 'Sign in · Tidalis Contract References',
     canActivate: [loginPageGuard],
     loadComponent: () => import('./features/login/login.component').then((m) => m.LoginComponent),
   },
   {
     path: '',
     pathMatch: 'full',
-    title: 'Tidalis · Project References',
+    title: 'Tidalis · Contract References',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/start/start-page.component').then((m) => m.StartPageComponent),
   },
   {
-    path: 'projects',
-    title: 'Projects · Tidalis',
+    path: 'contracts',
+    title: 'Contracts · Tidalis',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/projects/projects-page.component').then((m) => m.ProjectsPageComponent),
+      import('./features/contracts/contracts-page.component').then((m) => m.ContractsPageComponent),
   },
   {
     path: 'systems',

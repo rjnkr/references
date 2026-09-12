@@ -1,6 +1,6 @@
 import { ColDef } from 'ag-grid-community';
 
-import { PROJECT_TYPE_LABELS } from '../../../core/models/project.models';
+import { CONTRACT_TYPE_LABELS } from '../../../core/models/contract.models';
 import { System } from '../../../core/models/system.models';
 import { MapSelectionService } from '../../../core/services/map-selection.service';
 import { BoolChipCellRendererComponent, BoolChipVariant } from '../../../shared/grid/bool-chip-cell-renderer.component';
@@ -16,7 +16,7 @@ import { SystemNameCellRendererComponent } from './system-name-cell-renderer.com
 /** Column ids the "Columns" visibility menu shows by default; the rest are opt-in. */
 export const DEFAULT_VISIBLE_COLUMN_IDS = [
   'name',
-  'projectType',
+  'contractType',
   'country',
   'products',
   'tags',
@@ -36,7 +36,7 @@ export const SHOW_ON_MAP_COLUMN_ID = 'showOnMap';
  *  hidden and so never go through that selection. */
 export const ALL_COLUMN_IDS = [
   'name',
-  'projectType',
+  'contractType',
   'country',
   'products',
   'tags',
@@ -61,7 +61,7 @@ export const ALL_COLUMN_IDS = [
  *  matching what the backend can actually order by. */
 export const COLUMN_SORT_KEYS: Record<string, string> = {
   name: 'name',
-  projectType: 'projectType',
+  contractType: 'contractType',
   country: 'countryId',
   canBeUsedAsReference: 'canBeUsedAsReference',
   isSensitive: 'isSensitive',
@@ -181,13 +181,13 @@ export function buildSystemColumnDefs(
       cellRenderer: SystemNameCellRendererComponent,
     },
     {
-      colId: 'projectType',
+      colId: 'contractType',
       headerName: 'Type',
       width: 110,
       sortable: true,
       comparator: NO_OP_COMPARATOR,
       valueGetter: (params) =>
-        params.data ? (PROJECT_TYPE_LABELS[params.data.projectType] ?? params.data.projectType) : '',
+        params.data ? (CONTRACT_TYPE_LABELS[params.data.contractType] ?? params.data.contractType) : '',
       // See the note in `boolColumn` — `agSetColumnFilter` is Enterprise-only and renders an
       // empty, non-functional floating filter under Community. Text search against the same
       // label this valueGetter returns (e.g. "VTS") is the genuine Community equivalent.

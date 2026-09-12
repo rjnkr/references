@@ -11,8 +11,8 @@ export interface BoolChipCellRendererParams extends ICellRendererParams {
 
 /**
  * Renders the `'Yes' | 'No'` string a column's `valueGetter` already produces (see
- * `project-column-defs.ts`) as the same coloured pill chip the old `mat-table` cell used —
- * same `tidalis-chip` classes as everywhere else in the app (project detail panel, map).
+ * `contract-column-defs.ts`) as the same coloured pill chip the old `mat-table` cell used —
+ * same `tidalis-chip` classes as everywhere else in the app (contract detail panel, map).
  */
 @Component({
   selector: 'app-bool-chip-cell-renderer',

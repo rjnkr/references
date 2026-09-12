@@ -1,5 +1,5 @@
 /* ====================================================================================
- * Tidalis Project References — global stylesheet
+ * Tidalis Contract References — global stylesheet
  *
  * Load order matters:
  *   1. Angular Material prebuilt theme  (wired in angular.json, loaded before this file)
@@ -183,7 +183,7 @@ a {
 }
 
 /* Tags lookup — colours come from the Tag row itself (backgroundColor/textColor), set as
- * inline styles wherever this class is used (grid cells, the project/system chip rows). */
+ * inline styles wherever this class is used (grid cells, the contract/system chip rows). */
 .tidalis-tag-chip {
   display: inline-block;
   padding: 1px 10px;

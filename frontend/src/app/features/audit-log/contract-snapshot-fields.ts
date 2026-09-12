@@ -1,18 +1,18 @@
-import { PROJECT_TAG_LABELS, ProjectTag } from '../../core/models/project.models';
+import { CONTRACT_TAG_LABELS, ContractTag } from '../../core/models/contract.models';
 import { SnapshotField, date, dateTime, money, namedList, relation, text } from './snapshot-format';
 
-const projectType = (value: unknown): string =>
+const contractType = (value: unknown): string =>
   Array.isArray(value) && value.length > 0
-    ? value.map((tag) => PROJECT_TAG_LABELS[tag as ProjectTag] ?? String(tag)).join(', ')
+    ? value.map((tag) => CONTRACT_TAG_LABELS[tag as ContractTag] ?? String(tag)).join(', ')
     : '—';
 
-export const PROJECT_SNAPSHOT_FIELDS: SnapshotField[] = [
-  { key: 'projectNumber', label: 'Project number', format: text },
+export const CONTRACT_SNAPSHOT_FIELDS: SnapshotField[] = [
+  { key: 'contractNumber', label: 'Contract number', format: text },
   { key: 'name', label: 'Name', format: text },
   { key: 'system', label: 'System', format: relation(['name']) },
   { key: 'awardDate', label: 'Award date', format: date },
   { key: 'endDate', label: 'End date', format: date },
-  { key: 'projectType', label: 'Project type', format: projectType },
+  { key: 'contractType', label: 'Contract type', format: contractType },
   { key: 'currency', label: 'Currency', format: relation(['code', 'name']) },
   { key: 'implementationPrice', label: 'Implementation price', format: money },
   { key: 'maintenancePricePerYear', label: 'Maintenance price / year', format: money },

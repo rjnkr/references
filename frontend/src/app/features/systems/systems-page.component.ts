@@ -71,8 +71,8 @@ interface GridSort {
 
 /**
  * "Systems" — the delivered-system grid, rendered with AG Grid Community. The commercial
- * side of a reference (award date, prices, Pipedrive links) lives on the separate Projects
- * grid; zero, one or many projects can link back to a given system.
+ * side of a reference (award date, prices, Pipedrive links) lives on the separate Contracts
+ * grid; zero, one or many contracts can link back to a given system.
  *
  * Filtering strategy (documented in frontend/README.md):
  *  - sorting and pagination are sent to the backend, since AG Grid Community's client-side

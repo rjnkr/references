@@ -1,4 +1,4 @@
-import { ProjectType } from './project.models';
+import { ContractType } from './contract.models';
 
 /* ====================================================================================
  * World-map types — mirrors `GET /api/map/reference-points`.
@@ -18,7 +18,7 @@ export type MapPointKind = 'main' | 'location';
 export interface MapSystemSummary {
   id: number;
   name: string;
-  projectType: ProjectType;
+  contractType: ContractType;
   countryId: number;
   /** Whether this system references at least one port besides its own location. Only
    *  meaningful on a `'main'` point — always `true` on a `'location'` point. */

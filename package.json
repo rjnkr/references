@@ -2,7 +2,7 @@
   "name": "tidalis-references",
   "private": true,
   "version": "1.0.0",
-  "description": "Tidalis project reference database (NestJS + Angular)",
+  "description": "Tidalis contract reference database (NestJS + Angular)",
   "workspaces": [
     "backend",
     "frontend"

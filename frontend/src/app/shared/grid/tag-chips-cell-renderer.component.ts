@@ -4,7 +4,7 @@ import { ICellRendererParams } from 'ag-grid-community';
 
 import { Tag } from '../../core/models/lookup.models';
 
-/** A single project/system's tag assignments, however the grid row shapes them. */
+/** A single contract/system's tag assignments, however the grid row shapes them. */
 type TagAssignment = { tag: Tag };
 
 /** Renders every tag attached to the row as a coloured, rounded chip using that tag's own

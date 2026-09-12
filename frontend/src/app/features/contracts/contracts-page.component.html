@@ -1,7 +1,7 @@
-<mat-sidenav-container class="projects-shell" [hasBackdrop]="true">
-  <!-- Slide-in detail panel (opens on row click / "New Project"). -->
+<mat-sidenav-container class="contracts-shell" [hasBackdrop]="true">
+  <!-- Slide-in detail panel (opens on row click / "New Contract"). -->
   <mat-sidenav
-    class="projects-panel"
+    class="contracts-panel"
     position="end"
     mode="over"
     [autoFocus]="false"
@@ -9,7 +9,7 @@
     (openedChange)="onSidenavOpenedChange($event)"
   >
     @if (panel(); as state) {
-      <app-project-detail-panel
+      <app-contract-detail-panel
         [state]="state"
         (closed)="closePanel()"
         (saved)="onPanelSaved($event)"
@@ -19,12 +19,12 @@
     }
   </mat-sidenav>
 
-  <mat-sidenav-content class="projects-content">
-    <section class="tidalis-card projects-card">
+  <mat-sidenav-content class="contracts-content">
+    <section class="tidalis-card contracts-card">
       <!-- ------------------------------------------------------------------ toolbar -->
       <div class="tidalis-card-header">
-        <div class="projects-heading">
-          <h1>Project References</h1>
+        <div class="contracts-heading">
+          <h1>Contract References</h1>
           <div class="tidalis-card-subtitle">
             @if (loading()) {
               Loading…
@@ -32,12 +32,12 @@
               {{ displayedRowCount() }} of {{ rows().length }} shown on this page ·
               {{ total() }} matching in total
             } @else {
-              {{ total() }} {{ total() === 1 ? 'project' : 'projects' }}
+              {{ total() }} {{ total() === 1 ? 'contract' : 'contracts' }}
             }
           </div>
         </div>
 
-        <div class="projects-toolbar">
+        <div class="contracts-toolbar">
           <button
             mat-stroked-button
             type="button"
@@ -69,9 +69,9 @@
             <mat-icon>refresh</mat-icon>
           </button>
 
-          <button mat-flat-button color="primary" type="button" (click)="newProject()">
+          <button mat-flat-button color="primary" type="button" (click)="newContract()">
             <mat-icon>add</mat-icon>
-            <span>New Project</span>
+            <span>New Contract</span>
           </button>
         </div>
       </div>
@@ -95,11 +95,11 @@
       </mat-menu>
 
       @if (loading()) {
-        <mat-progress-bar mode="indeterminate" class="projects-progress"></mat-progress-bar>
+        <mat-progress-bar mode="indeterminate" class="contracts-progress"></mat-progress-bar>
       }
 
       @if (loadError()) {
-        <div class="projects-error">
+        <div class="contracts-error">
           <mat-icon>cloud_off</mat-icon>
           <span>{{ loadError() }}</span>
           <button mat-button type="button" (click)="load()">Retry</button>
@@ -107,15 +107,15 @@
       }
 
       <!-- --------------------------------------------------------------------- grid -->
-      <div class="tidalis-card-body tidalis-card-body--flush projects-body">
-        <div class="projects-grid">
+      <div class="tidalis-card-body tidalis-card-body--flush contracts-body">
+        <div class="contracts-grid">
           @if (!loading() && rows().length === 0) {
-            <div class="projects-empty">
-              No project references recorded yet — use “New Project” to add the first one.
+            <div class="contracts-empty">
+              No contract references recorded yet — use “New Contract” to add the first one.
             </div>
           } @else {
             <ag-grid-angular
-              class="projects-ag-grid"
+              class="contracts-ag-grid"
               [theme]="gridTheme"
               [columnDefs]="columnDefs"
               [defaultColDef]="defaultColDef"

@@ -21,7 +21,7 @@
         aria-label="Audit trail"
       >
         <mat-button-toggle value="system">Systems</mat-button-toggle>
-        <mat-button-toggle value="project">Projects</mat-button-toggle>
+        <mat-button-toggle value="contract">Contracts</mat-button-toggle>
       </mat-button-toggle-group>
 
       <mat-form-field appearance="outline" class="audit-search" subscriptSizing="dynamic">
@@ -29,7 +29,7 @@
         <input
           matInput
           [formControl]="searchControl"
-          [placeholder]="kind() === 'system' ? 'System or user…' : 'Project, number or user…'"
+          [placeholder]="kind() === 'system' ? 'System or user…' : 'Contract, number or user…'"
         />
         <mat-icon matPrefix>search</mat-icon>
       </mat-form-field>
@@ -65,7 +65,7 @@
       <mat-icon>filter_alt</mat-icon>
       <span>
         Showing history for
-        {{ scopedName() || (kind() === 'system' ? 'system #' : 'project #') + scopedId() }} only.
+        {{ scopedName() || (kind() === 'system' ? 'system #' : 'contract #') + scopedId() }} only.
       </span>
       <button mat-button type="button" (click)="clearScope()">Show all {{ kind() }}s</button>
     </div>
@@ -92,7 +92,7 @@
           <thead>
             <tr>
               <th>Timestamp ({{ tz.showUtc() ? 'UTC' : 'local' }})</th>
-              <th>{{ kind() === 'system' ? 'System' : 'Project' }}</th>
+              <th>{{ kind() === 'system' ? 'System' : 'Contract' }}</th>
               <th>Action</th>
               <th>Changed fields</th>
               <th>User</th>

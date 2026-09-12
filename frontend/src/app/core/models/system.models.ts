@@ -1,12 +1,12 @@
 import { Country, DocumentType, Module, Tag, UnLocode, UrlType } from './lookup.models';
-import { ProjectType } from './project.models';
+import { ContractType } from './contract.models';
 
 /* ====================================================================================
  * System types — mirrors the API contract implemented by the NestJS backend
  * (GET/POST/PATCH/DELETE /api/systems). A System is the delivered system itself
  * (scope, products, location, ports, modules, sub-systems, external interfaces, people,
- * documents); the commercial deal(s) around it are separate `Project` rows that link back
- * via `Project.systemId`.
+ * documents); the commercial deal(s) around it are separate `Contract` rows that link back
+ * via `Contract.systemId`.
  * ================================================================================== */
 
 /* --- Child collections (as returned by the API) ------------------------------------ */
@@ -74,7 +74,7 @@ export interface System {
   /** @maxLength 100 */
   name: string;
   scope: string;
-  projectType: ProjectType;
+  contractType: ContractType;
   products: string;
   description?: string;
   customerDetails?: string;
@@ -115,7 +115,7 @@ export interface System {
 export interface SystemWritePayload {
   name?: string;
   scope?: string;
-  projectType?: ProjectType;
+  contractType?: ContractType;
   products?: string;
   description?: string | null;
   customerDetails?: string | null;
@@ -142,7 +142,7 @@ export interface SystemWritePayload {
 
 export interface SystemQuery {
   search?: string;
-  projectType?: ProjectType | '';
+  contractType?: ContractType | '';
   countryId?: number | null;
   isSensitive?: boolean | null;
   canBeUsedAsReference?: boolean | null;

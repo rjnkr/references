@@ -25,7 +25,7 @@ export class UserManualPageComponent {
   protected readonly sections: ManualSection[] = [
     { id: 'overview', icon: 'info', label: 'Overview' },
     { id: 'systems', icon: 'dns', label: 'Systems' },
-    { id: 'projects', icon: 'table_view', label: 'Projects' },
+    { id: 'contracts', icon: 'table_view', label: 'Contracts' },
     { id: 'world-map', icon: 'public', label: 'World Map' },
     { id: 'reference-data', icon: 'tune', label: 'Reference Data' },
     { id: 'audit-trail', icon: 'history', label: 'Audit Trail' },
