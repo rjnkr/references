@@ -8,7 +8,7 @@ import { Request } from 'express';
  * `X-MCP-Key` header instead, checked against MCP_API_KEY.
  *
  * When MCP_API_KEY is empty the endpoint is closed rather than open - failing
- * shut is the right default for something that exposes project data.
+ * shut is the right default for something that exposes contract data.
  */
 @Injectable()
 export class McpApiKeyGuard implements CanActivate {

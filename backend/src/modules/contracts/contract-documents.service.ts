@@ -1,18 +1,18 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { ProjectDocument } from '@prisma/client';
+import { ContractDocument } from '@prisma/client';
 import { DbService } from '../../database/db-service/db.service';
 import { DocumentStorageService } from '../../core/document-storage.service';
 
 @Injectable()
-export class ProjectDocumentsService {
+export class ContractDocumentsService {
   constructor(
     private readonly db: DbService,
     private readonly storage: DocumentStorageService,
   ) {}
 
-  list(projectId: number) {
-    return this.db.projectDocument.findMany({
-      where: { projectId },
+  list(contractId: number) {
+    return this.db.contractDocument.findMany({
+      where: { contractId },
       include: { documentType: true },
       orderBy: { uploadedAt: 'desc' },
     });
@@ -24,7 +24,7 @@ export class ProjectDocumentsService {
    * behind on disk.
    */
   async upload(
-    projectId: number,
+    contractId: number,
     documentTypeId: number,
     file: { originalname: string; buffer: Buffer; size: number; mimetype: string },
     uploadedBy?: string,
@@ -34,9 +34,9 @@ export class ProjectDocumentsService {
     }
 
     // Both foreign keys are checked up front so a bad request never results in
-    // an orphaned file. A soft-deleted project 404s here the same as a missing one.
-    await this.db.project.findFirstOrThrow({
-      where: { id: projectId, deleted: false },
+    // an orphaned file. A soft-deleted contract 404s here the same as a missing one.
+    await this.db.contract.findFirstOrThrow({
+      where: { id: contractId, deleted: false },
       select: { id: true },
     });
     await this.db.documentType.findUniqueOrThrow({
@@ -44,12 +44,12 @@ export class ProjectDocumentsService {
       select: { id: true },
     });
 
-    const relativePath = await this.storage.save('projects', projectId, file.originalname, file.buffer);
+    const relativePath = await this.storage.save('contracts', contractId, file.originalname, file.buffer);
 
     try {
-      return await this.db.projectDocument.create({
+      return await this.db.contractDocument.create({
         data: {
-          projectId,
+          contractId,
           documentTypeId,
           fileName: file.originalname.slice(0, 255),
           filePath: relativePath,
@@ -66,22 +66,22 @@ export class ProjectDocumentsService {
     }
   }
 
-  /** Looks up the metadata row, scoped to the project in the URL. */
-  async findOne(projectId: number, documentId: number) {
-    const document = await this.db.projectDocument.findFirst({
-      where: { id: documentId, projectId },
+  /** Looks up the metadata row, scoped to the contract in the URL. */
+  async findOne(contractId: number, documentId: number) {
+    const document = await this.db.contractDocument.findFirst({
+      where: { id: documentId, contractId },
       include: { documentType: true },
     });
 
     if (!document) {
-      throw new NotFoundException(`Document ${documentId} does not exist for project ${projectId}`);
+      throw new NotFoundException(`Document ${documentId} does not exist for contract ${contractId}`);
     }
     return document;
   }
 
   /** Metadata plus a read stream, for the download endpoint. */
-  async openForDownload(projectId: number, documentId: number) {
-    const document = await this.findOne(projectId, documentId);
+  async openForDownload(contractId: number, documentId: number) {
+    const document = await this.findOne(contractId, documentId);
 
     if (!this.storage.exists(document.filePath)) {
       throw new NotFoundException(
@@ -93,9 +93,9 @@ export class ProjectDocumentsService {
   }
 
   /** Deletes the metadata row, then the file from disk (best effort). */
-  async remove(projectId: number, documentId: number): Promise<ProjectDocument> {
-    const document = await this.findOne(projectId, documentId);
-    const deleted = await this.db.projectDocument.delete({ where: { id: document.id } });
+  async remove(contractId: number, documentId: number): Promise<ContractDocument> {
+    const document = await this.findOne(contractId, documentId);
+    const deleted = await this.db.contractDocument.delete({ where: { id: document.id } });
     await this.storage.deleteQuietly(document.filePath);
     return deleted;
   }

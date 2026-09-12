@@ -1,13 +1,13 @@
 import { registerDecorator, ValidationArguments, ValidationOptions } from 'class-validator';
 
 /**
- * The nested project/system payload accepts two shapes for the simplest child
+ * The nested contract/system payload accepts two shapes for the simplest child
  * collections, so a client can send whichever is convenient:
  *
  *   ports:      [1, 2, 3]                 or  [{ unlocodeId: 1 }, ...]
  *   subSystems: ["VHF", "CCTV"]           or  [{ name: "VHF" }, ...]
  *
- * These decorators validate either form; ProjectsService/SystemsService
+ * These decorators validate either form; ContractsService/SystemsService
  * normalise them to the Prisma shape. Keeping validation here (rather than
  * @ValidateNested) is what makes the union possible under
  * `forbidNonWhitelisted`.

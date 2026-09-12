@@ -1,11 +1,11 @@
-# Tidalis Project References — API
+# Tidalis Contract References — API
 
-NestJS + TypeScript backend for recording Tidalis project references, split across two
+NestJS + TypeScript backend for recording Tidalis contract references, split across two
 entities: `System` (the delivered system itself — scope, products, location, ports,
-modules, sub-systems, external interfaces, people and documents) and `Project` (the
+modules, sub-systems, external interfaces, people and documents) and `Contract` (the
 commercial deal around it — award date, prices, currency, Pipedrive links and completion
-dates). A `Project` optionally links to the `System` it relates to via `systemId`; several
-projects (e.g. an implementation plus later maintenance renewals) can link to the same
+dates). A `Contract` optionally links to the `System` it relates to via `systemId`; several
+contracts (e.g. an implementation plus later maintenance renewals) can link to the same
 system. Read-heavy internal tool, protected by Tidalis SSO (SAML 2.0), with a Prisma/MariaDB
 data layer, Swagger docs and an MCP server so AI applications can query the reference
 database.
@@ -80,9 +80,9 @@ src/
   modules/
     auth/                 SAML strategy, session cookie, guards
     currencies/ countries/ unlocodes/ document-types/    lookup CRUD
-    projects/             projects (commercial deal) + completion dates
+    contracts/             contracts (commercial deal) + completion dates
     systems/               systems (delivered system) + nested children + document upload/download
-    audit-logs/            read-only Project audit trail
+    contract-audit-logs/   read-only Contract audit trail
     system-audit-logs/     read-only System audit trail
     map/                   world-map reference points (plots Systems)
   mcp/                    MCP server (HTTP/SSE) for AI applications
@@ -135,11 +135,11 @@ POST   /api/systems/:id/restore   undo a soft delete
 
 `GET /api/systems` query parameters:
 
-`search` (matches name, products), `projectType`, `countryId`, `isSensitive`,
+`search` (matches name, products), `contractType`, `countryId`, `isSensitive`,
 `canBeUsedAsReference`, `systemDecommissioned`, `sort`, `page`, `pageSize`.
 
 `sort` takes a field name, prefixed with `-` for descending, e.g. `sort=-createdAt`. Allowed
-fields: `id`, `name`, `projectType`, `products`, `countryId`, `isSensitive`,
+fields: `id`, `name`, `contractType`, `products`, `countryId`, `isSensitive`,
 `canBeUsedAsReference`, `showOnMap`, `systemDecommissioned`, `pocName`, `createdAt`,
 `updatedAt`. Anything else is a 400. Default sort is `name` ascending; default paging is
 `page=1&pageSize=25` (max 500).
@@ -165,7 +165,7 @@ accept either a compact or an object form, whichever is easier for the client:
 {
   "name": "Port of Rotterdam VTS",
   "scope": "Replacement of the existing VTS ... (max 200 words)",
-  "projectType": "VTS",
+  "contractType": "VTS",
   "products": "VTS Suite, Radar Processing",
   "countryId": 155,
   "systemUnlocodeId": 12,
@@ -189,32 +189,32 @@ replaces the existing rows entirely (delete + recreate in one transaction); a co
 **absent** is left untouched; an **empty array** clears it. Documents are never touched by
 `PATCH` — they have their own endpoints.
 
-### Projects
+### Contracts
 
 ```
-GET    /api/projects               list, filtered/sorted/paged
-POST   /api/projects               create, full nested payload, one transaction
-GET    /api/projects/:id           one project, fully expanded
-PATCH  /api/projects/:id           patch scalars and/or replace `completionDates`
-DELETE /api/projects/:id           soft delete (restorable from its audit trail entry)
-POST   /api/projects/:id/restore   undo a soft delete
+GET    /api/contracts               list, filtered/sorted/paged
+POST   /api/contracts               create, full nested payload, one transaction
+GET    /api/contracts/:id           one contract, fully expanded
+PATCH  /api/contracts/:id           patch scalars and/or replace `completionDates`
+DELETE /api/contracts/:id           soft delete (restorable from its audit trail entry)
+POST   /api/contracts/:id/restore   undo a soft delete
 ```
 
-`GET /api/projects` query parameters: `search` (matches projectNumber), `currencyId`,
-`systemId` (find the projects linked to a given system), `sort`, `page`, `pageSize`.
+`GET /api/contracts` query parameters: `search` (matches contractNumber), `currencyId`,
+`systemId` (find the contracts linked to a given system), `sort`, `page`, `pageSize`.
 
 Response shape:
 
 ```json
-{ "data": [ /* fully expanded projects */ ], "total": 141 }
+{ "data": [ /* fully expanded contracts */ ], "total": 141 }
 ```
 
-Every project comes back with `currency`, `completionDates`, and `system` — a summary of the
-linked `System` (or `null` if this project doesn't link to one).
+Every contract comes back with `currency`, `completionDates`, and `system` — a summary of the
+linked `System` (or `null` if this contract doesn't link to one).
 
 ```json
 {
-  "projectNumber": "TID-2024-017",
+  "contractNumber": "TID-2024-017",
   "awardDate": "2024-02-01",
   "implementationPrice": 4500000,
   "maintenancePricePerYear": 320000,
@@ -226,7 +226,7 @@ linked `System` (or `null` if this project doesn't link to one).
 
 ### Documents
 
-Documents belong to a `System`, not a `Project`:
+Documents belong to a `System`, not a `Contract`:
 
 ```
 GET    /api/systems/:id/documents                 list metadata
@@ -238,8 +238,8 @@ DELETE /api/systems/:id/documents/:documentId     delete row + file
 Upload fields: `file` (the file) and `documentType` (a `DocumentType` id; `documentTypeId` is
 accepted as an alias). Files are stored at `STORAGE_DIR/<systemId>/<uuid><original extension>`
 and only that relative path goes into the database, so the storage root can be moved without
-touching data — and a document uploaded before the Project/System split keeps its original
-`<projectId>/...` path unchanged, since `filePath` is opaque. `MAX_UPLOAD_MB` (default 25) caps
+touching data — and a document uploaded before the Contract/System split keeps its original
+`<contractId>/...` path unchanged, since `filePath` is opaque. `MAX_UPLOAD_MB` (default 25) caps
 the size.
 
 Deleting a document removes the file from disk on a best-effort basis before the row is
@@ -281,9 +281,11 @@ Tidalis IT (or whoever owns the SSO identity provider) and fill them in in `.env
 | `SAML_IDP_CERT`      | The IdP's signing certificate, base64 DER on **one line**, no PEM header/footer |
 
 You will also need to give them our side, which the API can generate for you once the above are
-set: `SAML_SP_ENTITY_ID` / `SAML_ISSUER` (default `urn:tidalis:project-references`), the ACS URL
-`SAML_CALLBACK_URL` (default `http://localhost:3000/api/auth/saml/callback` — use the real
-hostname in production), and the SP metadata XML from `GET /api/auth/saml/metadata`.
+set: `SAML_SP_ENTITY_ID` / `SAML_ISSUER` (default `urn:tidalis:project-references` — kept as-is
+through the Project→Contract rename since it may already be registered with a real IdP; change
+it deliberately, together with IT, if you want it to read `contract-references` instead), the
+ACS URL `SAML_CALLBACK_URL` (default `http://localhost:3000/api/auth/saml/callback` — use the
+real hostname in production), and the SP metadata XML from `GET /api/auth/saml/metadata`.
 
 **Until then the application still runs.** If `SAML_IDP_SSO_URL` or `SAML_IDP_CERT` is empty the
 strategy is simply not registered: a warning is logged at boot and the SSO endpoints answer
@@ -342,11 +344,11 @@ already reach everything the MCP tools return through the regular API.
 
 | Tool                        | Arguments                                          | Returns                              |
 | --------------------------- | -------------------------------------------------- | ------------------------------------ |
-| `list_systems`              | `search?`, `projectType?`, `countryId?`, `limit?`  | Compact system summaries             |
-| `get_system`                | `id`                                                | One fully expanded system + its projects |
-| `search_reference_systems`  | `query`, `projectType?`, `limit?`                  | Quotable reference systems           |
-| `list_projects`             | `search?`, `systemId?`, `limit?`                    | Compact commercial-deal summaries    |
-| `get_project`                | `id?` or `projectNumber?`                          | One fully expanded project           |
+| `list_systems`              | `search?`, `contractType?`, `countryId?`, `limit?` | Compact system summaries             |
+| `get_system`                | `id`                                                | One fully expanded system + its contracts |
+| `search_reference_systems`  | `query`, `contractType?`, `limit?`                 | Quotable reference systems           |
+| `list_contracts`            | `search?`, `systemId?`, `limit?`                    | Compact commercial-deal summaries    |
+| `get_contract`               | `id?` or `contractNumber?`                         | One fully expanded contract          |
 | `list_currencies`           | –                                                  | Currency lookup                      |
 | `list_countries`            | –                                                  | Country lookup                       |
 | `list_unlocodes`            | `search?`, `limit?`                                | UN/LOCODE lookup                     |

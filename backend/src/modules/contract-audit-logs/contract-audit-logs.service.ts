@@ -1,47 +1,47 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { DbService } from '../../database/db-service/db.service';
-import { QueryAuditLogsDto } from './dto/query-audit-logs.dto';
+import { QueryContractAuditLogsDto } from './dto/query-contract-audit-logs.dto';
 
 @Injectable()
-export class AuditLogsService {
+export class ContractAuditLogsService {
   constructor(private readonly db: DbService) {}
 
-  async findAll(query: QueryAuditLogsDto) {
+  async findAll(query: QueryContractAuditLogsDto) {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 25;
     const where = this.buildWhere(query);
 
     const [data, total] = await this.db.$transaction([
-      this.db.projectAuditLog.findMany({
+      this.db.contractAuditLog.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
-      this.db.projectAuditLog.count({ where }),
+      this.db.contractAuditLog.count({ where }),
     ]);
 
     return { data, total };
   }
 
   findOne(id: number) {
-    return this.db.projectAuditLog.findUniqueOrThrow({ where: { id } });
+    return this.db.contractAuditLog.findUniqueOrThrow({ where: { id } });
   }
 
-  private buildWhere(query: QueryAuditLogsDto): Prisma.ProjectAuditLogWhereInput {
-    const where: Prisma.ProjectAuditLogWhereInput = {};
+  private buildWhere(query: QueryContractAuditLogsDto): Prisma.ContractAuditLogWhereInput {
+    const where: Prisma.ContractAuditLogWhereInput = {};
 
-    if (query.projectId !== undefined) {
-      where.projectId = query.projectId;
+    if (query.contractId !== undefined) {
+      where.contractId = query.contractId;
     }
     if (query.action !== undefined) {
       where.action = query.action;
     }
     if (query.search) {
       where.OR = [
-        { projectName: { contains: query.search } },
-        { projectNumber: { contains: query.search } },
+        { contractName: { contains: query.search } },
+        { contractNumber: { contains: query.search } },
         { userEmail: { contains: query.search } },
         { userName: { contains: query.search } },
       ];

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ProjectType } from '@prisma/client';
+import { ContractType } from '@prisma/client';
 import { CountryDto } from '../../../generated/nestjs-dto/country.dto';
 
 /**
@@ -24,8 +24,8 @@ export class MapReferenceSystemDto {
   @ApiProperty({ example: 'Rotterdam VTS Upgrade' })
   name: string;
 
-  @ApiProperty({ enum: ProjectType, enumName: 'ProjectType' })
-  projectType: ProjectType;
+  @ApiProperty({ enum: ContractType, enumName: 'ContractType' })
+  contractType: ContractType;
 
   @ApiProperty({ type: 'integer', format: 'int32' })
   countryId: number;

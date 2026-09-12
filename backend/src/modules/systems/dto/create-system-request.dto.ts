@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ProjectType } from '@prisma/client';
+import { ContractType } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -44,9 +44,9 @@ export class CreateSystemRequestDto {
   @MaxWords(200)
   scope: string;
 
-  @ApiProperty({ enum: ProjectType, enumName: 'ProjectType' })
-  @IsEnum(ProjectType)
-  projectType: ProjectType;
+  @ApiProperty({ enum: ContractType, enumName: 'ContractType' })
+  @IsEnum(ContractType)
+  contractType: ContractType;
 
   @ApiProperty({ maxLength: 100, description: 'Free text list of products used' })
   @IsString()

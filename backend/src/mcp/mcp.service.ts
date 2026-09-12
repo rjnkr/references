@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { Prisma, ProjectType } from '@prisma/client';
+import { ContractType, Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { DbService } from '../database/db-service/db.service';
-import { PROJECT_INCLUDE } from '../modules/projects/projects.service';
+import { CONTRACT_INCLUDE } from '../modules/contracts/contracts.service';
 import { SYSTEM_INCLUDE } from '../modules/systems/systems.service';
 
 const DEFAULT_LIMIT = 25;
@@ -34,25 +34,25 @@ function registerMcpTool(
   (server.registerTool as (...args: unknown[]) => unknown)(name, config, handler);
 }
 
-const PROJECT_TYPE_VALUES = ['PMIS', 'VTS', 'AIS', 'COASTAL', 'PILOT', 'OTHER'] as const;
+const CONTRACT_TYPE_VALUES = ['PMIS', 'VTS', 'AIS', 'COASTAL', 'PILOT', 'OTHER'] as const;
 
 /**
- * Tool input schemas declare `projectType` as a plain string, not
- * `z.enum(PROJECT_TYPE_VALUES)`, and this function validates it at runtime
+ * Tool input schemas declare `contractType` as a plain string, not
+ * `z.enum(CONTRACT_TYPE_VALUES)`, and this function validates it at runtime
  * instead. Putting the enum's literal-tuple type into a schema that flows
  * through the MCP SDK's dual zod v3/v4 compat generics (`registerTool`)
  * blows past TypeScript's instantiation-depth limit (TS2589) - reproducible
  * with just `z.enum([...]).optional()` in an `inputSchema`. A plain string,
  * validated here, sidesteps the compiler limit without weakening validation.
  */
-function parseProjectType(value: string | undefined): ProjectType | undefined {
+function parseContractType(value: string | undefined): ContractType | undefined {
   if (value === undefined) {
     return undefined;
   }
-  if ((PROJECT_TYPE_VALUES as readonly string[]).includes(value)) {
-    return value as ProjectType;
+  if ((CONTRACT_TYPE_VALUES as readonly string[]).includes(value)) {
+    return value as ContractType;
   }
-  throw new Error(`Invalid projectType "${value}". Expected one of: ${PROJECT_TYPE_VALUES.join(', ')}`);
+  throw new Error(`Invalid contractType "${value}". Expected one of: ${CONTRACT_TYPE_VALUES.join(', ')}`);
 }
 
 /**
@@ -62,17 +62,17 @@ function parseProjectType(value: string | undefined): ProjectType | undefined {
  */
 const listSystemsInputSchema = {
   search: z.string().optional().describe('Free text matched against system name and products'),
-  projectType: z
+  contractType: z
     .string()
     .optional()
-    .describe(`Filter on the type of system. One of: ${PROJECT_TYPE_VALUES.join(', ')}`),
+    .describe(`Filter on the type of system. One of: ${CONTRACT_TYPE_VALUES.join(', ')}`),
   countryId: z.number().int().optional().describe('Country id, see list_countries'),
   limit: z.number().int().min(1).max(MAX_LIMIT).optional(),
 } satisfies z.ZodRawShape;
 
-const listProjectsInputSchema = {
-  search: z.string().optional().describe('Free text matched against the project number and name'),
-  systemId: z.number().int().optional().describe('System id, see list_systems, to find its projects'),
+const listContractsInputSchema = {
+  search: z.string().optional().describe('Free text matched against the contract number and name'),
+  systemId: z.number().int().optional().describe('System id, see list_systems, to find its contracts'),
   limit: z.number().int().min(1).max(MAX_LIMIT).optional(),
 } satisfies z.ZodRawShape;
 
@@ -93,11 +93,11 @@ export class McpService {
    */
   createServer(): McpServer {
     const server = new McpServer(
-      { name: 'tidalis-project-references', version: '1.0.0' },
+      { name: 'tidalis-contract-references', version: '1.0.0' },
       {
         instructions:
-          'Read-only access to the Tidalis project reference database: delivered systems with ' +
-          'their scope, products, ports, sub-systems and people, plus the commercial projects ' +
+          'Read-only access to the Tidalis contract reference database: delivered systems with ' +
+          'their scope, products, ports, sub-systems and people, plus the commercial contracts ' +
           '(deals) linked to them. Use search_reference_systems when looking for systems that ' +
           'may be quoted to customers - it excludes sensitive systems and those the customer ' +
           'has not approved as a reference.',
@@ -105,7 +105,7 @@ export class McpService {
     );
 
     this.registerSystemTools(server);
-    this.registerProjectTools(server);
+    this.registerContractTools(server);
     this.registerLookupTools(server);
 
     return server;
@@ -124,14 +124,14 @@ export class McpService {
           'system; use get_system for the full record.',
         inputSchema: listSystemsInputSchema,
       },
-      async ({ search, projectType, countryId, limit }) => {
+      async ({ search, contractType, countryId, limit }) => {
         const where: Prisma.SystemWhereInput = { deleted: false };
         if (search) {
           where.OR = [{ name: { contains: search } }, { products: { contains: search } }];
         }
-        const parsedProjectType = parseProjectType(projectType);
-        if (parsedProjectType) {
-          where.projectType = parsedProjectType;
+        const parsedContractType = parseContractType(contractType);
+        if (parsedContractType) {
+          where.contractType = parsedContractType;
         }
         if (countryId !== undefined) {
           where.countryId = countryId;
@@ -160,7 +160,7 @@ export class McpService {
       {
         description:
           'Get one system in full, including ports, modules, sub-systems, external interfaces, ' +
-          'people, document metadata and the projects (commercial deals) linked to it.',
+          'people, document metadata and the contracts (commercial deals) linked to it.',
         inputSchema: {
           id: z.number().int().describe('Numeric system id'),
         },
@@ -175,7 +175,7 @@ export class McpService {
           return asJson({ error: `No system found for id ${id}` });
         }
 
-        const projects = await this.db.project.findMany({
+        const contracts = await this.db.contract.findMany({
           where: { systemId: id, deleted: false },
           include: { currency: true },
           orderBy: { awardDate: 'desc' },
@@ -183,7 +183,7 @@ export class McpService {
 
         return asJson({
           ...this.toSystemDetail(system),
-          projects: projects.map((project) => this.toProjectSummary(project)),
+          contracts: contracts.map((contract) => this.toContractSummary(contract)),
         });
       },
     );
@@ -200,15 +200,15 @@ export class McpService {
           query: z
             .string()
             .describe('Free text, e.g. "VTS systems in Belgium" or "coastal radar surveillance"'),
-          projectType: z
+          contractType: z
             .string()
             .optional()
-            .describe(`One of: ${PROJECT_TYPE_VALUES.join(', ')}`),
+            .describe(`One of: ${CONTRACT_TYPE_VALUES.join(', ')}`),
           limit: z.number().int().min(1).max(MAX_LIMIT).optional(),
         },
       },
-      async ({ query, projectType: projectTypeInput, limit }) => {
-        const projectType = parseProjectType(projectTypeInput);
+      async ({ query, contractType: contractTypeInput, limit }) => {
+        const contractType = parseContractType(contractTypeInput);
         // The query arrives as a natural language phrase. Rather than trying to
         // parse it, every meaningful word is matched across the free-text
         // fields and against country name/ISO code, and the results are ranked
@@ -219,7 +219,7 @@ export class McpService {
           deleted: false,
           canBeUsedAsReference: true,
           isSensitive: false,
-          ...(projectType ? { projectType } : {}),
+          ...(contractType ? { contractType } : {}),
         };
 
         const where: Prisma.SystemWhereInput =
@@ -267,74 +267,74 @@ export class McpService {
   }
 
   // -------------------------------------------------------------------------
-  // Project tools
+  // Contract tools
   // -------------------------------------------------------------------------
 
-  private registerProjectTools(server: McpServer): void {
+  private registerContractTools(server: McpServer): void {
     registerMcpTool(server,
-      'list_projects',
+      'list_contracts',
       {
         description:
-          'List Tidalis commercial projects (deals), optionally filtered. Returns a compact ' +
-          'summary per project - the commercial facts (name, award date, prices, project ' +
-          'number) - use get_project for the full record including its linked system.',
-        inputSchema: listProjectsInputSchema,
+          'List Tidalis commercial contracts (deals), optionally filtered. Returns a compact ' +
+          'summary per contract - the commercial facts (name, award date, prices, contract ' +
+          'number) - use get_contract for the full record including its linked system.',
+        inputSchema: listContractsInputSchema,
       },
       async ({ search, systemId, limit }) => {
-        const where: Prisma.ProjectWhereInput = { deleted: false };
+        const where: Prisma.ContractWhereInput = { deleted: false };
         if (search) {
-          where.OR = [{ projectNumber: { contains: search } }, { name: { contains: search } }];
+          where.OR = [{ contractNumber: { contains: search } }, { name: { contains: search } }];
         }
         if (systemId !== undefined) {
           where.systemId = systemId;
         }
 
-        const [projects, total] = await Promise.all([
-          this.db.project.findMany({
+        const [contracts, total] = await Promise.all([
+          this.db.contract.findMany({
             where,
             include: { currency: true, system: true },
             orderBy: { awardDate: 'desc' },
             take: limit ?? DEFAULT_LIMIT,
           }),
-          this.db.project.count({ where }),
+          this.db.contract.count({ where }),
         ]);
 
         return asJson({
           total,
-          returned: projects.length,
-          projects: projects.map((project) => this.toProjectSummary(project)),
+          returned: contracts.length,
+          contracts: contracts.map((contract) => this.toContractSummary(contract)),
         });
       },
     );
 
     registerMcpTool(server,
-      'get_project',
+      'get_contract',
       {
         description:
-          'Get one project in full: commercial facts (award date, prices, Pipedrive links, ' +
-          'completion dates) plus its linked system, if any. Give either id or projectNumber.',
+          'Get one contract in full: commercial facts (award date, prices, Pipedrive links, ' +
+          'completion dates) plus its linked system, if any. Give either id or contractNumber.',
         inputSchema: {
-          id: z.number().int().optional().describe('Numeric project id'),
-          projectNumber: z.string().optional().describe('Tidalis project number, e.g. TID-2024-017'),
+          id: z.number().int().optional().describe('Numeric contract id'),
+          contractNumber: z.string().optional().describe('Tidalis contract number, e.g. TID-2024-017'),
         },
       },
-      async ({ id, projectNumber }) => {
-        if (id === undefined && !projectNumber) {
-          return asJson({ error: 'Either id or projectNumber is required' });
+      async ({ id, contractNumber }) => {
+        if (id === undefined && !contractNumber) {
+          return asJson({ error: 'Either id or contractNumber is required' });
         }
 
-        const project = await this.db.project.findFirst({
-          where: id !== undefined ? { id, deleted: false } : { projectNumber, deleted: false },
-          include: PROJECT_INCLUDE,
+        const contract = await this.db.contract.findFirst({
+          where: id !== undefined ? { id, deleted: false } : { contractNumber, deleted: false },
+          include: CONTRACT_INCLUDE,
         });
 
-        if (!project) {
+        if (!contract) {
           return asJson({
-            error: `No project found for ${id !== undefined ? `id ${id}` : `project number ${projectNumber}`}`,
+            error: `No contract found for ${id !== undefined ? `id ${id}` : `contract number ${contractNumber}`}`,
           });
         }
 
-        return asJson(this.toProjectDetail(project));
+        return asJson(this.toContractDetail(contract));
       },
     );
   }
@@ -346,7 +346,7 @@ export class McpService {
   private registerLookupTools(server: McpServer): void {
     registerMcpTool(server,
       'list_currencies',
-      { description: 'List the currencies project prices can be recorded in.', inputSchema: {} },
+      { description: 'List the currencies contract prices can be recorded in.', inputSchema: {} },
       async () => asJson(await this.db.currency.findMany({ orderBy: { code: 'asc' } })),
     );
 
@@ -396,7 +396,7 @@ export class McpService {
     return {
       id: system.id,
       name: system.name,
-      projectType: system.projectType,
+      contractType: system.contractType,
       products: system.products,
       country: system.country?.name,
       countryCode: system.country?.isoCode,
@@ -452,48 +452,48 @@ export class McpService {
   }
 
   // -------------------------------------------------------------------------
-  // Shaping - projects
+  // Shaping - contracts
   // -------------------------------------------------------------------------
 
-  private toProjectSummary(project: Record<string, any>) {
+  private toContractSummary(contract: Record<string, any>) {
     return {
-      id: project.id,
-      projectNumber: project.projectNumber,
-      name: project.name,
-      awardDate: this.dateOnly(project.awardDate),
-      endDate: this.dateOnly(project.endDate),
-      projectType: project.projectType,
-      currency: project.currency?.code,
-      implementationPrice: project.implementationPrice,
-      maintenancePricePerYear: project.maintenancePricePerYear,
-      system: project.system ? { id: project.system.id, name: project.system.name } : null,
+      id: contract.id,
+      contractNumber: contract.contractNumber,
+      name: contract.name,
+      awardDate: this.dateOnly(contract.awardDate),
+      endDate: this.dateOnly(contract.endDate),
+      contractType: contract.contractType,
+      currency: contract.currency?.code,
+      implementationPrice: contract.implementationPrice,
+      maintenancePricePerYear: contract.maintenancePricePerYear,
+      system: contract.system ? { id: contract.system.id, name: contract.system.name } : null,
     };
   }
 
-  private toProjectDetail(project: Record<string, any>) {
+  private toContractDetail(contract: Record<string, any>) {
     return {
-      ...this.toProjectSummary(project),
-      newDevelopments: project.newDevelopments,
-      implementationDetails: project.implementationDetails,
-      pipedriveNumber: project.pipedriveNumber,
-      urls: project.urls?.map((row: any) => ({
+      ...this.toContractSummary(contract),
+      newDevelopments: contract.newDevelopments,
+      implementationDetails: contract.implementationDetails,
+      pipedriveNumber: contract.pipedriveNumber,
+      urls: contract.urls?.map((row: any) => ({
         urlType: row.urlType?.name,
         description: row.description,
         url: row.url,
       })),
-      completionDates: project.completionDates?.map((row: any) => ({
+      completionDates: contract.completionDates?.map((row: any) => ({
         completionDate: this.dateOnly(row.completionDate),
         description: row.description,
       })),
-      documents: project.documents?.map((row: any) => ({
+      documents: contract.documents?.map((row: any) => ({
         id: row.id,
         fileName: row.fileName,
         documentType: row.documentType?.name,
         fileSize: row.fileSize,
         uploadedAt: row.uploadedAt,
       })),
-      createdAt: project.createdAt,
-      updatedAt: project.updatedAt,
+      createdAt: contract.createdAt,
+      updatedAt: contract.updatedAt,
     };
   }
 
@@ -504,9 +504,9 @@ export class McpService {
   /** Drops the filler words a natural language question is full of. */
   private significantWords(query: string): string[] {
     const stopWords = new Set([
-      'a', 'an', 'and', 'any', 'are', 'as', 'at', 'be', 'been', 'can', 'find', 'for', 'from',
-      'get', 'give', 'has', 'have', 'in', 'is', 'it', 'list', 'me', 'of', 'on', 'or', 'our',
-      'project', 'projects', 'reference', 'references', 'search', 'show', 'system', 'systems',
+      'a', 'an', 'and', 'any', 'are', 'as', 'at', 'be', 'been', 'can', 'contract', 'contracts',
+      'find', 'for', 'from', 'get', 'give', 'has', 'have', 'in', 'is', 'it', 'list', 'me', 'of',
+      'on', 'or', 'our', 'reference', 'references', 'search', 'show', 'system', 'systems',
       'that', 'the', 'to', 'us', 'usable', 'use', 'used', 'we', 'what', 'where', 'which', 'with',
     ]);
 
@@ -532,7 +532,7 @@ export class McpService {
       system.description,
       system.country?.name,
       system.country?.isoCode,
-      system.projectType,
+      system.contractType,
     ]
       .filter(Boolean)
       .join(' ')

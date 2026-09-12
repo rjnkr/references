@@ -3,12 +3,12 @@ import { AuditAction } from '@prisma/client';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
-export class QueryAuditLogsDto {
-  @ApiPropertyOptional({ description: 'Project.id - restricts the trail to a single project' })
+export class QueryContractAuditLogsDto {
+  @ApiPropertyOptional({ description: 'Contract.id - restricts the trail to a single contract' })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  projectId?: number;
+  contractId?: number;
 
   @ApiPropertyOptional({ enum: AuditAction, enumName: 'AuditAction' })
   @IsOptional()
@@ -16,7 +16,7 @@ export class QueryAuditLogsDto {
   action?: AuditAction;
 
   @ApiPropertyOptional({
-    description: 'Free text, matches project name, project number and the acting user',
+    description: 'Free text, matches contract name, contract number and the acting user',
   })
   @IsOptional()
   @IsString()

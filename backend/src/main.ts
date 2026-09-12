@@ -10,16 +10,16 @@ import { PrismaValidationErrorFilter } from './core/filters/prisma-validation-er
 
 function setupSwagger(app: NestExpressApplication): void {
   const config = new DocumentBuilder()
-    .setTitle('Tidalis Project References API')
+    .setTitle('Tidalis Contract References API')
     .setDescription(
-      'Internal API for recording Tidalis project references: project metadata, financials, ' +
+      'Internal API for recording Tidalis contract references: contract metadata, financials, ' +
         'ports, documents and the people involved. Authentication is a `tidalis_session` ' +
         'httpOnly cookie issued after Tidalis SSO (SAML 2.0); see /api/auth/saml/login.',
     )
     .setVersion('1.0')
     .addCookieAuth('tidalis_session')
-    .addTag('Projects')
-    .addTag('Project documents')
+    .addTag('Contracts')
+    .addTag('Contract documents')
     .addTag('Currencies')
     .addTag('Countries')
     .addTag('UN/LOCODEs')

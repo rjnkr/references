@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ProjectTag } from '@prisma/client';
+import { ContractTag } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -14,17 +14,17 @@ import {
 } from 'class-validator';
 import { EmptyToUndefined } from '../../../core/validators/empty-to-undefined.transform';
 import { IsTagRefArray } from '../../../core/validators/loose-array.validator';
-import { ProjectCompletionDateInput, ProjectUrlInput } from './project-children.dto';
+import { ContractCompletionDateInput, ContractUrlInput } from './contract-children.dto';
 
 /**
- * Full nested payload for POST /api/projects. Scalar project fields plus every
+ * Full nested payload for POST /api/contracts. Scalar contract fields plus every
  * child collection, created in a single transaction.
  */
-export class CreateProjectRequestDto {
+export class CreateContractRequestDto {
   // --- identification -------------------------------------------------------
 
-  // `projectNumber` is `@unique` in the DB - a blank string would collide with every
-  // other project created without one, so it needs `EmptyToUndefined` (not just
+  // `contractNumber` is `@unique` in the DB - a blank string would collide with every
+  // other contract created without one, so it needs `EmptyToUndefined` (not just
   // `@IsOptional`) to turn a blank form field into "omit this column" (-> NULL),
   // the same as null-safe uniqueness expects.
   @ApiPropertyOptional({ maxLength: 50, example: 'TID-2024-017' })
@@ -32,7 +32,7 @@ export class CreateProjectRequestDto {
   @IsOptional()
   @IsString()
   @MaxLength(50)
-  projectNumber?: string;
+  contractNumber?: string;
 
   @ApiPropertyOptional({ maxLength: 100, example: 'Port of Rotterdam VTS replacement' })
   @IsOptional()
@@ -40,12 +40,12 @@ export class CreateProjectRequestDto {
   @MaxLength(100)
   name?: string;
 
-  @ApiProperty({ description: 'Date the project was awarded (date only)', example: '2024-02-01' })
+  @ApiProperty({ description: 'Date the contract was awarded (date only)', example: '2024-02-01' })
   @IsDateString()
   awardDate: string;
 
   @ApiPropertyOptional({
-    description: 'Date the project ended, or is expected to end (date only)',
+    description: 'Date the contract ended, or is expected to end (date only)',
     example: '2024-12-31',
     nullable: true,
   })
@@ -54,22 +54,22 @@ export class CreateProjectRequestDto {
   endDate?: string | null;
 
   @ApiPropertyOptional({
-    enum: ProjectTag,
-    enumName: 'ProjectTag',
+    enum: ContractTag,
+    enumName: 'ContractTag',
     isArray: true,
     description:
-      'Multi-select: which phase(s) this project covers - implementation, Support & ' +
-      'Maintenance, or both. Not to be confused with System.projectType.',
+      'Multi-select: which phase(s) this contract covers - implementation, Support & ' +
+      'Maintenance, or both. Not to be confused with System.contractType.',
   })
   @IsOptional()
   @IsArray()
-  @IsEnum(ProjectTag, { each: true })
-  projectType?: ProjectTag[];
+  @IsEnum(ContractTag, { each: true })
+  contractType?: ContractTag[];
 
   @ApiPropertyOptional({
     description:
-      'System.id this project relates to. Not every project links to a System, and several ' +
-      'projects (e.g. an implementation plus later maintenance renewals) can link to the same one.',
+      'System.id this contract relates to. Not every contract links to a System, and several ' +
+      'contracts (e.g. an implementation plus later maintenance renewals) can link to the same one.',
     nullable: true,
   })
   @IsOptional()
@@ -125,19 +125,19 @@ export class CreateProjectRequestDto {
 
   // --- child collections ----------------------------------------------------
 
-  @ApiPropertyOptional({ type: ProjectCompletionDateInput, isArray: true })
+  @ApiPropertyOptional({ type: ContractCompletionDateInput, isArray: true })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => ProjectCompletionDateInput)
-  completionDates?: ProjectCompletionDateInput[];
+  @Type(() => ContractCompletionDateInput)
+  completionDates?: ContractCompletionDateInput[];
 
-  @ApiPropertyOptional({ type: ProjectUrlInput, isArray: true })
+  @ApiPropertyOptional({ type: ContractUrlInput, isArray: true })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => ProjectUrlInput)
-  urls?: ProjectUrlInput[];
+  @Type(() => ContractUrlInput)
+  urls?: ContractUrlInput[];
 
   @ApiPropertyOptional({
     description: 'Tag ids, e.g. [1, 2]. Objects of shape { tagId } are accepted too.',

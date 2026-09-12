@@ -27,7 +27,7 @@ export function countWords(value: string): number {
 
 /**
  * Caps a free-text field at a number of whitespace-separated words. Used for
- * Project.scope, which is TEXT in the database but limited to 200 words by the
+ * System.scope, which is TEXT in the database but limited to 200 words by the
  * business rules - so the limit lives at the API layer, not in the schema.
  */
 export function MaxWords(max: number, validationOptions?: ValidationOptions) {

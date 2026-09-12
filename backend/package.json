@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "Tidalis Project References API (NestJS + Prisma + MariaDB)",
+  "description": "Tidalis Contract References API (NestJS + Prisma + MariaDB)",
   "author": "Tidalis",
   "private": true,
   "license": "UNLICENSED",

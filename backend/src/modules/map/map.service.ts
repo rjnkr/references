@@ -7,7 +7,7 @@ import { MapReferencePointDto } from './dto/map-reference-point.dto';
 const SYSTEM_SUMMARY_SELECT = {
   id: true,
   name: true,
-  projectType: true,
+  contractType: true,
   countryId: true,
 } as const;
 

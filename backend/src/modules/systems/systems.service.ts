@@ -81,8 +81,8 @@ export class SystemsService {
     if (query.search) {
       where.OR = [{ name: { contains: query.search } }, { products: { contains: query.search } }];
     }
-    if (query.projectType !== undefined) {
-      where.projectType = query.projectType;
+    if (query.contractType !== undefined) {
+      where.contractType = query.contractType;
     }
     if (query.countryId !== undefined) {
       where.countryId = query.countryId;

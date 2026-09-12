@@ -18,9 +18,9 @@ import { ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiTags } from '@nes
 import { Response } from 'express';
 import { memoryStorage } from 'multer';
 import { CurrentUser, SessionUser } from '../../core/decorators/current-user.decorator';
-import { ExpandedProjectDocumentDto } from './dto/expanded-project.dto';
-import { UploadProjectDocumentDto } from './dto/upload-document.dto';
-import { ProjectDocumentsService } from './project-documents.service';
+import { ExpandedContractDocumentDto } from './dto/expanded-contract.dto';
+import { UploadContractDocumentDto } from './dto/upload-document.dto';
+import { ContractDocumentsService } from './contract-documents.service';
 
 /**
  * Multer is configured with in-memory storage: DocumentStorageService decides
@@ -30,23 +30,23 @@ import { ProjectDocumentsService } from './project-documents.service';
  */
 const maxUploadBytes = () => parseInt(process.env.MAX_UPLOAD_MB ?? '25', 10) * 1024 * 1024;
 
-@Controller('projects/:projectId/documents')
-@ApiTags('Project documents')
-export class ProjectDocumentsController {
-  constructor(private readonly documentsService: ProjectDocumentsService) {}
+@Controller('contracts/:contractId/documents')
+@ApiTags('Contract documents')
+export class ContractDocumentsController {
+  constructor(private readonly documentsService: ContractDocumentsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'List the documents of a project' })
-  @ApiOkResponse({ type: ExpandedProjectDocumentDto, isArray: true })
-  list(@Param('projectId', ParseIntPipe) projectId: number) {
-    return this.documentsService.list(projectId);
+  @ApiOperation({ summary: 'List the documents of a contract' })
+  @ApiOkResponse({ type: ExpandedContractDocumentDto, isArray: true })
+  list(@Param('contractId', ParseIntPipe) contractId: number) {
+    return this.documentsService.list(contractId);
   }
 
   @Post()
   @ApiOperation({
-    summary: 'Upload a document for a project',
+    summary: 'Upload a document for a contract',
     description:
-      'multipart/form-data with the file in the `file` field and the DocumentType id in `documentType`. The file is stored under STORAGE_DIR/projects/<projectId>/ with a generated name; only the relative path is kept in the database.',
+      'multipart/form-data with the file in the `file` field and the DocumentType id in `documentType`. The file is stored under STORAGE_DIR/contracts/<contractId>/ with a generated name; only the relative path is kept in the database.',
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -59,7 +59,7 @@ export class ProjectDocumentsController {
       },
     },
   })
-  @ApiOkResponse({ type: ExpandedProjectDocumentDto })
+  @ApiOkResponse({ type: ExpandedContractDocumentDto })
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
@@ -67,9 +67,9 @@ export class ProjectDocumentsController {
     }),
   )
   upload(
-    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('contractId', ParseIntPipe) contractId: number,
     @UploadedFile() file: Express.Multer.File,
-    @Body() body: UploadProjectDocumentDto,
+    @Body() body: UploadContractDocumentDto,
     @CurrentUser() user: SessionUser,
   ) {
     const documentTypeId = body.documentType ?? body.documentTypeId;
@@ -77,7 +77,7 @@ export class ProjectDocumentsController {
       throw new BadRequestException('documentType (a DocumentType id) is required');
     }
 
-    return this.documentsService.upload(projectId, documentTypeId, file, user?.email);
+    return this.documentsService.upload(contractId, documentTypeId, file, user?.email);
   }
 
   @Get(':documentId')
@@ -86,11 +86,11 @@ export class ProjectDocumentsController {
     description: 'Streams the file with Content-Disposition set to the original filename.',
   })
   async download(
-    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('contractId', ParseIntPipe) contractId: number,
     @Param('documentId', ParseIntPipe) documentId: number,
     @Res() res: Response,
   ): Promise<void> {
-    const { document, stream } = await this.documentsService.openForDownload(projectId, documentId);
+    const { document, stream } = await this.documentsService.openForDownload(contractId, documentId);
 
     res.set({
       'Content-Type': document.mimeType,
@@ -109,9 +109,9 @@ export class ProjectDocumentsController {
     description: 'Removes the database row and deletes the file from disk (best effort).',
   })
   async remove(
-    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('contractId', ParseIntPipe) contractId: number,
     @Param('documentId', ParseIntPipe) documentId: number,
   ): Promise<void> {
-    await this.documentsService.remove(projectId, documentId);
+    await this.documentsService.remove(contractId, documentId);
   }
 }

@@ -6,14 +6,14 @@ import * as path from 'path';
 
 /**
  * Owns everything that touches the filesystem. Files live under STORAGE_DIR,
- * namespaced per caller (e.g. "systems"/"projects") and owning entity id, with a
+ * namespaced per caller (e.g. "systems"/"contracts") and owning entity id, with a
  * generated name so two uploads of "contract.pdf" never collide:
  *
  *   <STORAGE_DIR>/<namespace>/<ownerId>/<uuid><original extension>
  *
  * Only the path relative to STORAGE_DIR is stored in the database, so the
  * storage root can be moved or remounted without touching data. Files uploaded
- * before the Project/System split (or before this service was namespaced) keep
+ * before the Contract/System split (or before this service was namespaced) keep
  * their original, un-namespaced `<id>/...` path - `filePath` is opaque and never
  * has to match the row's current id or follow the current layout.
  */

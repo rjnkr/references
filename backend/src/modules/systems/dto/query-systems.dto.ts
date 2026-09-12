@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { ProjectType } from '@prisma/client';
+import { ContractType } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
@@ -21,7 +21,7 @@ const toBoolean = ({ value }: { value: unknown }) => {
 export const SORTABLE_SYSTEM_FIELDS = [
   'id',
   'name',
-  'projectType',
+  'contractType',
   'products',
   'countryId',
   'isSensitive',
@@ -38,10 +38,10 @@ export class QuerySystemsDto {
   @IsString()
   search?: string;
 
-  @ApiPropertyOptional({ enum: ProjectType, enumName: 'ProjectType' })
+  @ApiPropertyOptional({ enum: ContractType, enumName: 'ContractType' })
   @IsOptional()
-  @IsEnum(ProjectType)
-  projectType?: ProjectType;
+  @IsEnum(ContractType)
+  contractType?: ContractType;
 
   @ApiPropertyOptional({ description: 'Country.id' })
   @IsOptional()

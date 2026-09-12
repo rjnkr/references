@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDateString, IsInt, IsNotEmpty, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
 
-export class ProjectCompletionDateInput {
+export class ContractCompletionDateInput {
   @ApiProperty({
     description: 'Date the customer accepted delivery (date only)',
     example: '2024-06-30',
@@ -16,7 +16,7 @@ export class ProjectCompletionDateInput {
   description?: string;
 }
 
-export class ProjectUrlInput {
+export class ContractUrlInput {
   @ApiProperty({ description: 'UrlType.id' })
   @IsInt()
   urlTypeId: number;

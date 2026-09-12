@@ -3,9 +3,9 @@ import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
 /** Fields a client may sort on. Anything else is rejected. */
-export const SORTABLE_PROJECT_FIELDS = [
+export const SORTABLE_CONTRACT_FIELDS = [
   'id',
-  'projectNumber',
+  'contractNumber',
   'name',
   'awardDate',
   'endDate',
@@ -18,8 +18,8 @@ export const SORTABLE_PROJECT_FIELDS = [
   'updatedAt',
 ] as const;
 
-export class QueryProjectsDto {
-  @ApiPropertyOptional({ description: 'Free text, matches projectNumber and name' })
+export class QueryContractsDto {
+  @ApiPropertyOptional({ description: 'Free text, matches contractNumber and name' })
   @IsOptional()
   @IsString()
   search?: string;
@@ -30,14 +30,14 @@ export class QueryProjectsDto {
   @IsInt()
   currencyId?: number;
 
-  @ApiPropertyOptional({ description: 'System.id - finds the projects linked to a given system' })
+  @ApiPropertyOptional({ description: 'System.id - finds the contracts linked to a given system' })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   systemId?: number;
 
   @ApiPropertyOptional({
-    description: `Field to sort on, prefix with "-" for descending. One of: ${SORTABLE_PROJECT_FIELDS.join(', ')}`,
+    description: `Field to sort on, prefix with "-" for descending. One of: ${SORTABLE_CONTRACT_FIELDS.join(', ')}`,
     example: '-awardDate',
   })
   @IsOptional()

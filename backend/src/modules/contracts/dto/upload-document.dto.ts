@@ -7,7 +7,7 @@ import { IsInt, IsOptional } from 'class-validator';
  * `documentTypeId` must be supplied - both names are accepted so the field can
  * be called either way on the client.
  */
-export class UploadProjectDocumentDto {
+export class UploadContractDocumentDto {
   @ApiPropertyOptional({ description: 'DocumentType.id (preferred field name)' })
   @IsOptional()
   @Type(() => Number)
