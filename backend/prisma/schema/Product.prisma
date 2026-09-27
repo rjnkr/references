@@ -1,0 +1,16 @@
+/// Lookup table of Tidalis products, identified by a short product code.
+model Product {
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  id   Int    @id @default(autoincrement())
+  /// Short unique product code, e.g. "VTS"
+  /// @maxLength 20
+  code String @unique @db.VarChar(20)
+  /// @maxLength 150
+  name String @db.VarChar(150)
+
+  modules ModuleProduct[]
+  systems SystemProduct[]
+
+  @@map("products")
+}

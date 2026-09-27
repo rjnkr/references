@@ -1,4 +1,4 @@
-import { Country, DocumentType, Module, Tag, UnLocode, UrlType } from './lookup.models';
+import { Country, DocumentType, Module, Product, Tag, UnLocode, UrlType } from './lookup.models';
 import { ContractType } from './contract.models';
 
 /* ====================================================================================
@@ -41,6 +41,12 @@ export interface SystemTagAssignment {
   tag: Tag;
 }
 
+export interface SystemProductAssignment {
+  id: number;
+  productId: number;
+  product: Product;
+}
+
 export interface SystemModuleAssignment {
   id: number;
   moduleId: number;
@@ -75,7 +81,6 @@ export interface System {
   name: string;
   scope: string;
   contractType: ContractType;
-  products: string;
   description?: string;
   customerDetails?: string;
   endUserDetails?: string;
@@ -97,6 +102,8 @@ export interface System {
   createdAt: string;
   updatedAt: string;
   ports: SystemPort[];
+  /** Tidalis products used, zero or more. */
+  products: SystemProductAssignment[];
   modules: SystemModuleAssignment[];
   subSystems: SystemNamedItem[];
   externalInterfaces: SystemExternalInterface[];
@@ -116,7 +123,8 @@ export interface SystemWritePayload {
   name?: string;
   scope?: string;
   contractType?: ContractType;
-  products?: string;
+  /** Product ids. */
+  products?: number[];
   description?: string | null;
   customerDetails?: string | null;
   endUserDetails?: string | null;

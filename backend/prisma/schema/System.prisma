@@ -10,9 +10,6 @@ model System {
   /// Free text scope of the system. Limited to 200 words at the API layer.
   scope                String      @db.Text
   contractType         ContractType
-  /// Free text list of Tidalis products used
-  /// @maxLength 100
-  products             String      @db.VarChar(100)
   /// @DtoCreateOptional
   /// @DtoUpdateOptional
   description          String?     @db.Text
@@ -74,6 +71,7 @@ model System {
 
   contracts          Contract[]
   ports              SystemPort[]
+  products           SystemProduct[]
   modules            SystemModule[]
   subSystems         SystemSubSystem[]
   externalInterfaces SystemExternalInterface[]

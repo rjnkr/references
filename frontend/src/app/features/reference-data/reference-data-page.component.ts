@@ -7,9 +7,10 @@ import {
   COUNTRY_CONFIG,
   CURRENCY_CONFIG,
   DOCUMENT_TYPE_CONFIG,
-  MODULE_CONFIG,
+  PRODUCT_CONFIG,
   TAG_CONFIG,
   URL_TYPE_CONFIG,
+  moduleConfig,
   unlocodeConfig,
 } from './reference-data.configs';
 
@@ -33,7 +34,7 @@ interface ReferenceTile {
   styleUrl: './reference-data-page.component.scss',
 })
 export class ReferenceDataPageComponent {
-  // `unlocodeConfig` needs a countries accessor at runtime; an empty stand-in is enough
+  // `unlocodeConfig`/`moduleConfig` need a lookup accessor at runtime; an empty stand-in is enough
   // here since this landing page only reads `title`/`icon`/`description`.
   protected readonly tiles: ReferenceTile[] = [
     COUNTRY_CONFIG,
@@ -41,7 +42,8 @@ export class ReferenceDataPageComponent {
     DOCUMENT_TYPE_CONFIG,
     URL_TYPE_CONFIG,
     TAG_CONFIG,
-    MODULE_CONFIG,
+    moduleConfig(() => []),
+    PRODUCT_CONFIG,
     unlocodeConfig(() => []),
   ].map((config) => ({
     icon: config.icon,

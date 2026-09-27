@@ -5,6 +5,8 @@ import { SystemDto } from '../../../generated/nestjs-dto/system.dto';
 import { SystemDocumentDto } from '../../../generated/nestjs-dto/systemDocument.dto';
 import { SystemExternalInterfaceDto } from '../../../generated/nestjs-dto/systemExternalInterface.dto';
 import { SystemModuleDto } from '../../../generated/nestjs-dto/systemModule.dto';
+import { ProductDto } from '../../../generated/nestjs-dto/product.dto';
+import { SystemProductDto } from '../../../generated/nestjs-dto/systemProduct.dto';
 import { SystemPersonDto } from '../../../generated/nestjs-dto/systemPerson.dto';
 import { SystemPortDto } from '../../../generated/nestjs-dto/systemPort.dto';
 import { SystemSubSystemDto } from '../../../generated/nestjs-dto/systemSubSystem.dto';
@@ -31,6 +33,11 @@ export class ExpandedSystemDocumentDto extends SystemDocumentDto {
   documentType: DocumentTypeDto;
 }
 
+export class ExpandedSystemProductDto extends SystemProductDto {
+  @ApiProperty({ type: ProductDto })
+  product: ProductDto;
+}
+
 export class ExpandedSystemDto extends SystemDto {
   @ApiProperty({ type: CountryDto })
   country: CountryDto;
@@ -40,6 +47,9 @@ export class ExpandedSystemDto extends SystemDto {
 
   @ApiProperty({ type: ExpandedSystemPortDto, isArray: true })
   ports: ExpandedSystemPortDto[];
+
+  @ApiProperty({ type: ExpandedSystemProductDto, isArray: true })
+  products: ExpandedSystemProductDto[];
 
   @ApiProperty({ type: SystemModuleDto, isArray: true })
   modules: SystemModuleDto[];

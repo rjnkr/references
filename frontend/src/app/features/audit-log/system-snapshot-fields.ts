@@ -6,7 +6,6 @@ export const SYSTEM_SNAPSHOT_FIELDS: SnapshotField[] = [
   { key: 'country', label: 'Country', format: relation(['name', 'isoCode']) },
   { key: 'systemUnlocode', label: 'System UN/LOCODE', format: relation(['code', 'name']) },
   { key: 'scope', label: 'Scope', format: text },
-  { key: 'products', label: 'Products', format: text },
   { key: 'description', label: 'Description', format: text },
   { key: 'customerDetails', label: 'Customer details', format: text },
   { key: 'endUserDetails', label: 'End user details', format: text },
@@ -19,8 +18,19 @@ export const SYSTEM_SNAPSHOT_FIELDS: SnapshotField[] = [
   { key: 'systemDecommissioned', label: 'System decommissioned', format: bool },
   { key: 'ports', label: 'Ports', format: namedList() },
   {
+    key: 'products',
+    label: 'Products',
+    // Snapshots taken before products became a lookup hold the old free text.
+    format: (value) =>
+      typeof value === 'string'
+        ? text(value)
+        : Array.isArray(value) && value.length > 0
+          ? value.map((row: Record<string, unknown>) => (row['product'] as { name?: string })?.name).join(', ')
+          : '—',
+  },
+  {
     key: 'modules',
-    label: 'Modules',
+    label: 'Functions',
     format: (value) =>
       Array.isArray(value) && value.length > 0
         ? value.map((row: Record<string, unknown>) => (row['module'] as { name?: string })?.name).join(', ')

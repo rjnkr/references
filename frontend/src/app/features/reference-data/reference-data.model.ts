@@ -8,7 +8,7 @@ const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/;
 export interface ReferenceField {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'select' | 'color';
+  type: 'text' | 'number' | 'select' | 'checkboxes' | 'color';
   required?: boolean;
   minLength?: number;
   maxLength?: number;
@@ -19,7 +19,7 @@ export interface ReferenceField {
   uppercase?: boolean;
   placeholder?: string;
   hint?: string;
-  /** For `type: 'select'` — evaluated lazily so options (e.g. countries) can load async. */
+  /** For `type: 'select'` / `'checkboxes'` — evaluated lazily so options (e.g. countries) can load async. */
   options?: () => { value: number; label: string }[];
 }
 

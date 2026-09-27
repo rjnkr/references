@@ -16,6 +16,7 @@ export const SYSTEM_INCLUDE = {
   country: true,
   systemUnlocode: { include: { country: true } },
   ports: { include: { unlocode: { include: { country: true } } } },
+  products: { include: { product: true }, orderBy: { product: { code: 'asc' } } },
   modules: { include: { module: true }, orderBy: { module: { name: 'asc' } } },
   subSystems: { orderBy: { name: 'asc' } },
   externalInterfaces: { orderBy: { name: 'asc' } },
@@ -28,7 +29,7 @@ export const SYSTEM_INCLUDE = {
 /** The system payload minus the child collections. */
 type SystemScalarInput = Omit<
   CreateSystemRequestDto,
-  'ports' | 'modules' | 'subSystems' | 'externalInterfaces' | 'people' | 'tags' | 'urls'
+  'ports' | 'products' | 'modules' | 'subSystems' | 'externalInterfaces' | 'people' | 'tags' | 'urls'
 >;
 
 /** The fully expanded system shape returned by every read/write below - also what
@@ -79,7 +80,7 @@ export class SystemsService {
     const where: Prisma.SystemWhereInput = { deleted: false };
 
     if (query.search) {
-      where.OR = [{ name: { contains: query.search } }, { products: { contains: query.search } }];
+      where.OR = [{ name: { contains: query.search } }, productSearch(query.search)];
     }
     if (query.contractType !== undefined) {
       where.contractType = query.contractType;
@@ -135,6 +136,7 @@ export class SystemsService {
         data: {
           ...(scalars as Prisma.SystemUncheckedCreateInput),
           ports: children.ports ? { create: children.ports } : undefined,
+          products: children.products ? { create: children.products } : undefined,
           modules: children.modules ? { create: children.modules } : undefined,
           subSystems: children.subSystems ? { create: children.subSystems } : undefined,
           externalInterfaces: children.externalInterfaces
@@ -189,6 +191,15 @@ export class SystemsService {
         if (children.ports.length > 0) {
           await tx.systemPort.createMany({
             data: children.ports.map((row) => ({ ...row, systemId: id })),
+          });
+        }
+      }
+
+      if (children.products) {
+        await tx.systemProduct.deleteMany({ where: { systemId: id } });
+        if (children.products.length > 0) {
+          await tx.systemProduct.createMany({
+            data: children.products.map((row) => ({ ...row, systemId: id })),
           });
         }
       }
@@ -324,7 +335,8 @@ export class SystemsService {
    * The two accepted shapes for ports/modules/subSystems collapse here.
    */
   private split(dto: CreateSystemRequestDto) {
-    const { ports, modules, subSystems, externalInterfaces, people, tags, urls, ...scalars } = dto;
+    const { ports, products, modules, subSystems, externalInterfaces, people, tags, urls, ...scalars } =
+      dto;
 
     return {
       scalars: scalars as SystemScalarInput,
@@ -335,6 +347,8 @@ export class SystemsService {
         ports: ports
           ? [...new Set(ports.map(toUnlocodeId))].map((unlocodeId) => ({ unlocodeId }))
           : undefined,
+        // Duplicates would trip the unique(systemId, productId) index.
+        products: products ? [...new Set(products)].map((productId) => ({ productId })) : undefined,
         // Duplicate modules would trip the unique(systemId, moduleId) index, so
         // collapse them here rather than returning a 409 for a harmless
         // double-click in the UI.
@@ -363,4 +377,13 @@ export class SystemsService {
       },
     };
   }
+}
+
+/** Matches systems linked to a product whose code or name contains `term`. */
+export function productSearch(term: string): Prisma.SystemWhereInput {
+  return {
+    products: {
+      some: { product: { OR: [{ code: { contains: term } }, { name: { contains: term } }] } },
+    },
+  };
 }

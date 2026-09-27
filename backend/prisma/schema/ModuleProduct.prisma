@@ -1,0 +1,20 @@
+/// Join table: the products a (lookup) module belongs to. A module references zero or
+/// more products; a product can be referenced by several modules.
+model ModuleProduct {
+  /// @DtoCreateOptional
+  /// @DtoUpdateOptional
+  id        Int @id @default(autoincrement())
+  /// @DtoRelationIncludeId
+  moduleId  Int
+  /// @DtoRelationIncludeId
+  productId Int
+
+  /// @DtoReadOnly
+  module  Module  @relation(fields: [moduleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  /// @DtoReadOnly
+  product Product @relation(fields: [productId], references: [id], onUpdate: Cascade)
+
+  @@unique([moduleId, productId])
+  @@index([productId])
+  @@map("module_products")
+}

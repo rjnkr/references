@@ -19,61 +19,79 @@
 
   <form [formGroup]="form" class="edit-form" novalidate>
     @for (field of data.fields; track field.key) {
-      <div class="edit-form__row">
-        <mat-form-field appearance="outline" class="edit-form__field">
-          <mat-label>{{ field.label }}</mat-label>
+      @if (field.type === 'checkboxes') {
+        <fieldset class="edit-form__checkboxes">
+          <legend class="edit-form__checkboxes-label">{{ field.label }}</legend>
+          @for (option of field.options ? field.options!() : []; track option.value) {
+            <mat-checkbox
+              [checked]="isChecked(field, option.value)"
+              (change)="toggleCheckbox(field, option.value, $event.checked)"
+              >{{ option.label }}</mat-checkbox
+            >
+          } @empty {
+            <span class="edit-form__checkboxes-empty">Nothing to choose from yet.</span>
+          }
+          @if (field.hint) {
+            <span class="edit-form__checkboxes-hint">{{ field.hint }}</span>
+          }
+        </fieldset>
+      } @else {
+        <div class="edit-form__row">
+          <mat-form-field appearance="outline" class="edit-form__field">
+            <mat-label>{{ field.label }}</mat-label>
 
-          @if (field.type === 'select') {
-            <mat-select [formControlName]="field.key">
-              <mat-option [value]="null">—</mat-option>
-              @for (option of field.options ? field.options!() : []; track option.value) {
-                <mat-option [value]="option.value">{{ option.label }}</mat-option>
-              }
-            </mat-select>
-          } @else if (field.type === 'number') {
+            @if (field.type === 'select') {
+              <mat-select [formControlName]="field.key">
+                <mat-option [value]="null">—</mat-option>
+                @for (option of field.options ? field.options!() : []; track option.value) {
+                  <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                }
+              </mat-select>
+            } @else if (field.type === 'number') {
+              <input
+                matInput
+                type="number"
+                [formControlName]="field.key"
+                [placeholder]="field.placeholder ?? ''"
+              />
+            } @else if (field.type === 'color') {
+              <input
+                matInput
+                type="text"
+                [formControlName]="field.key"
+                [placeholder]="field.placeholder ?? '#RRGGBB'"
+                maxlength="7"
+                (input)="onInput(field, $event)"
+              />
+            } @else {
+              <input
+                matInput
+                type="text"
+                [formControlName]="field.key"
+                [placeholder]="field.placeholder ?? ''"
+                [maxlength]="field.maxLength ?? null"
+                (input)="onInput(field, $event)"
+              />
+            }
+
+            @if (field.hint && !errorText(field)) {
+              <mat-hint>{{ field.hint }}</mat-hint>
+            }
+            @if (errorText(field); as message) {
+              <mat-error>{{ message }}</mat-error>
+            }
+          </mat-form-field>
+
+          @if (field.type === 'color') {
             <input
-              matInput
-              type="number"
-              [formControlName]="field.key"
-              [placeholder]="field.placeholder ?? ''"
-            />
-          } @else if (field.type === 'color') {
-            <input
-              matInput
-              type="text"
-              [formControlName]="field.key"
-              [placeholder]="field.placeholder ?? '#RRGGBB'"
-              maxlength="7"
-              (input)="onInput(field, $event)"
-            />
-          } @else {
-            <input
-              matInput
-              type="text"
-              [formControlName]="field.key"
-              [placeholder]="field.placeholder ?? ''"
-              [maxlength]="field.maxLength ?? null"
-              (input)="onInput(field, $event)"
+              class="edit-form__color-swatch"
+              type="color"
+              [value]="form.get(field.key)?.value || '#000000'"
+              (input)="pickColor(field, $event)"
             />
           }
-
-          @if (field.hint && !errorText(field)) {
-            <mat-hint>{{ field.hint }}</mat-hint>
-          }
-          @if (errorText(field); as message) {
-            <mat-error>{{ message }}</mat-error>
-          }
-        </mat-form-field>
-
-        @if (field.type === 'color') {
-          <input
-            class="edit-form__color-swatch"
-            type="color"
-            [value]="form.get(field.key)?.value || '#000000'"
-            (input)="pickColor(field, $event)"
-          />
-        }
-      </div>
+        </div>
+      }
     }
   </form>
 </mat-dialog-content>

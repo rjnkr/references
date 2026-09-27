@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -31,6 +32,7 @@ export interface ReferenceEditDialogData {
     MatInputModule,
     MatSelectModule,
     MatButtonModule,
+    MatCheckboxModule,
   ],
   templateUrl: './reference-edit-dialog.component.html',
   styleUrl: './reference-edit-dialog.component.scss',
@@ -49,7 +51,8 @@ export class ReferenceEditDialogComponent {
     const controls: Record<string, unknown> = {};
     for (const field of this.data.fields) {
       const raw = this.data.value?.[field.key];
-      const initial = field.type === 'select' ? (raw ?? null) : (raw ?? '');
+      const initial =
+        field.type === 'checkboxes' ? [...((raw as unknown[]) ?? [])] : field.type === 'select' ? (raw ?? null) : (raw ?? '');
       controls[field.key] = [initial, fieldValidators(field)];
     }
     return this.fb.group(controls);
@@ -91,6 +94,17 @@ export class ReferenceEditDialogComponent {
     return 'Invalid value';
   }
 
+  isChecked(field: ReferenceField, value: number): boolean {
+    return ((this.form.get(field.key)?.value as number[]) ?? []).includes(value);
+  }
+
+  toggleCheckbox(field: ReferenceField, value: number, checked: boolean): void {
+    const control = this.form.get(field.key);
+    const current = (control?.value as number[]) ?? [];
+    control?.setValue(checked ? [...current, value] : current.filter((v) => v !== value));
+    control?.markAsDirty();
+  }
+
   pickColor(field: ReferenceField, event: Event): void {
     const input = event.target as HTMLInputElement;
     this.form.get(field.key)?.setValue(input.value.toUpperCase());
@@ -116,6 +130,8 @@ export class ReferenceEditDialogComponent {
         payload[field.key] = raw === '' || raw === null ? null : Number(raw);
       } else if (field.type === 'select') {
         payload[field.key] = raw ?? null;
+      } else if (field.type === 'checkboxes') {
+        payload[field.key] = raw ?? [];
       } else {
         const text = typeof raw === 'string' ? raw.trim() : raw;
         payload[field.key] = field.required ? text : text || null;

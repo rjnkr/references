@@ -3,7 +3,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Observable, forkJoin, map, of, shareReplay, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { Country, Currency, DocumentType, Module, Tag, UnLocode, UrlType } from '../models/lookup.models';
+import { Country, Currency, DocumentType, Module, Product, Tag, UnLocode, UrlType } from '../models/lookup.models';
 
 /**
  * Read-only access to the lookup tables. Currencies / countries / document types are
@@ -21,6 +21,7 @@ export class LookupService {
   private tags$?: Observable<Tag[]>;
   private urlTypes$?: Observable<UrlType[]>;
   private modules$?: Observable<Module[]>;
+  private products$?: Observable<Product[]>;
 
   /** Synchronous mirrors, handy for template lookups and table cell rendering. */
   readonly currencies = signal<Currency[]>([]);
@@ -29,6 +30,7 @@ export class LookupService {
   readonly tags = signal<Tag[]>([]);
   readonly urlTypes = signal<UrlType[]>([]);
   readonly modules = signal<Module[]>([]);
+  readonly products = signal<Product[]>([]);
 
   getCurrencies(): Observable<Currency[]> {
     this.currencies$ ??= this.http.get<Currency[]>(`${this.base}/api/currencies`).pipe(
@@ -84,6 +86,15 @@ export class LookupService {
     return this.modules$;
   }
 
+  getProducts(): Observable<Product[]> {
+    this.products$ ??= this.http.get<Product[]>(`${this.base}/api/products`).pipe(
+      map((rows) => rows ?? []),
+      tap((rows) => this.products.set(rows)),
+      shareReplay({ bufferSize: 1, refCount: false }),
+    );
+    return this.products$;
+  }
+
   /** Loads everything the list screen and the detail form need for their dropdowns. */
   preload(): Observable<unknown> {
     return forkJoin({
@@ -93,6 +104,7 @@ export class LookupService {
       tags: this.getTags(),
       urlTypes: this.getUrlTypes(),
       modules: this.getModules(),
+      products: this.getProducts(),
     });
   }
 
@@ -102,7 +114,9 @@ export class LookupService {
    * rest of the app (contract dropdowns, chips, …) stops serving stale cached rows without
    * requiring a full page reload.
    */
-  invalidate(table: 'currencies' | 'countries' | 'documentTypes' | 'tags' | 'urlTypes' | 'modules'): void {
+  invalidate(
+    table: 'currencies' | 'countries' | 'documentTypes' | 'tags' | 'urlTypes' | 'modules' | 'products',
+  ): void {
     if (table === 'currencies') {
       this.currencies$ = undefined;
     } else if (table === 'countries') {
@@ -113,8 +127,10 @@ export class LookupService {
       this.tags$ = undefined;
     } else if (table === 'urlTypes') {
       this.urlTypes$ = undefined;
-    } else {
+    } else if (table === 'modules') {
       this.modules$ = undefined;
+    } else {
+      this.products$ = undefined;
     }
   }
 

@@ -1,4 +1,4 @@
-import { Country, Currency, DocumentType, Module, Tag, UnLocode, UrlType } from '../../core/models/lookup.models';
+import { Country, Currency, DocumentType, Module, Product, Tag, UnLocode, UrlType } from '../../core/models/lookup.models';
 import { ReferenceEntityConfig } from './reference-data.model';
 
 export const COUNTRY_CONFIG: ReferenceEntityConfig<Country> = {
@@ -71,16 +71,63 @@ export const DOCUMENT_TYPE_CONFIG: ReferenceEntityConfig<DocumentType> = {
   fields: [{ key: 'name', label: 'Name', type: 'text', required: true, maxLength: 100 }],
 };
 
-export const MODULE_CONFIG: ReferenceEntityConfig<Module> = {
-  key: 'modules',
-  title: 'Modules',
-  icon: 'extension',
-  description: 'Named software modules that can be delivered as part of a system.',
-  singular: 'module',
-  emptyMessage: 'No modules recorded yet.',
-  rowLabel: (row) => row.name,
-  columns: [{ key: 'name', label: 'Name', render: (row) => row.name }],
-  fields: [{ key: 'name', label: 'Name', type: 'text', required: true, maxLength: 150 }],
+/** Products are only needed to populate the module's product picker — injected at render
+ *  time by the reference-table page, like the countries for `unlocodeConfig`. */
+export function moduleConfig(products: () => Product[]): ReferenceEntityConfig<Module> {
+  return {
+    key: 'modules',
+    title: 'Functions',
+    icon: 'extension',
+    description: 'Named software functions that can be delivered as part of a system.',
+    singular: 'function',
+    emptyMessage: 'No functions recorded yet.',
+    rowLabel: (row) => row.name,
+    columns: [
+      { key: 'name', label: 'Name', render: (row) => row.name },
+      {
+        key: 'products',
+        label: 'Products',
+        render: (row) => (row.products?.length ? row.products.map((p) => p.code).join(', ') : '—'),
+      },
+    ],
+    fields: [
+      { key: 'name', label: 'Name', type: 'text', required: true, maxLength: 150 },
+      {
+        key: 'productIds',
+        label: 'Products',
+        type: 'checkboxes',
+        hint: 'Tick the products this function belongs to (none is fine).',
+        options: () => products().map((p) => ({ value: p.id, label: `${p.code} — ${p.name}` })),
+      },
+    ],
+  };
+}
+
+export const PRODUCT_CONFIG: ReferenceEntityConfig<Product> = {
+  key: 'products',
+  title: 'Products',
+  icon: 'inventory_2',
+  description: 'Tidalis products, each identified by a short product code.',
+  singular: 'product',
+  emptyMessage: 'No products recorded yet.',
+  rowLabel: (row) => `${row.code} — ${row.name}`,
+  columns: [
+    { key: 'code', label: 'Code', render: (row) => row.code },
+    { key: 'name', label: 'Name', render: (row) => row.name },
+  ],
+  fields: [
+    {
+      key: 'code',
+      label: 'Code',
+      type: 'text',
+      required: true,
+      maxLength: 20,
+      uppercase: true,
+      placeholder: 'VTS',
+      hint: 'Short unique product code, e.g. VTS',
+    },
+    { key: 'name', label: 'Name', type: 'text', required: true, maxLength: 150 },
+  ],
 };
 
 export const URL_TYPE_CONFIG: ReferenceEntityConfig<UrlType> = {

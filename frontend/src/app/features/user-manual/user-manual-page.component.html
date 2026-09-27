@@ -31,7 +31,7 @@
         </p>
         <p>
           A <strong>System</strong> is the thing that was actually built and delivered: its
-          scope, location, modules, contacts and documents. A <strong>Contract</strong> is a
+          scope, location, functions, contacts and documents. A <strong>Contract</strong> is a
           commercial record that points back to the System it belongs to. One system can have
           several contracts linked to  it (an initial implementation plus later maintenance renewals, for example).
           In case a support & maintenance contract is renewed, a new contract shall be created to reflect the updated information.
@@ -67,9 +67,9 @@
         <h3>Detail panel tabs</h3>
         <ul class="manual-list">
           <li><strong>General</strong> — name, UN/LOCODE, type, country, tags.</li>
-          <li><strong>Scope &amp; Description</strong> — scope, products and description text.</li>
+          <li><strong>Scope &amp; Description</strong> — scope and description text.</li>
           <li><strong>Ports &amp; Locations</strong> — every UN/LOCODE port the system serves besides its own location.</li>
-          <li><strong>Modules &amp; Subsystems</strong> — the named modules delivered (see below) and free-text subsystems/interfaces.</li>
+          <li><strong>Products</strong> — the products used, the named functions delivered (see below) and free-text subsystems/interfaces.</li>
           <li><strong>People &amp; Contacts</strong> — point of contact details and the people involved.</li>
           <li><strong>URLs</strong> — links (e.g. product pages, documentation) grouped by type.</li>
           <li><strong>Documents</strong> — files attached to the system, available once it's been saved once.</li>
@@ -83,19 +83,27 @@
           installed.
         </p>
 
-        <h3>Modules</h3>
+        <h3>Products &amp; Functions</h3>
         <p>
-          Modules are picked from the shared list managed under
+          Tick the products the system uses in the checkbox list at the top of the
+          <strong>Products</strong> tab. The function picker below it only offers
+          the functions that belong to a ticked product (which products a function belongs to is
+          set under <a routerLink="." fragment="reference-data">Reference Data → Functions</a>),
+          so tick a product first. Unticking a product hides its functions; any of them that
+          were selected are removed from the system when you save.
+        </p>
+        <p>
+          Functions are picked from the shared list managed under
           <a routerLink="." fragment="reference-data">Reference Data</a>, not typed freely.
-          A system must have at least one module.
+          A system must have at least one function.
         </p>
         <p>
           When nothing is selected yet, a dropdown with checkboxes is shown directly so you
-          can pick right away. Once at least one module is selected, the field collapses to
+          can pick right away. Once at least one function is selected, the field collapses to
           a plain alphabetical list — much easier to scan than a long comma-separated line
-          once a system carries ten or more modules — with a small pencil button next to it.
+          once a system carries ten or more functions — with a small pencil button next to it.
           Click the pencil to reopen the picker and change the selection; it collapses back
-          to the list once you click away. The grid's own <strong>Modules</strong> column
+          to the list once you click away. The grid's own <strong>Functions</strong> column
           (opt-in via <strong>Columns</strong>) shows the same alphabetical list, growing the
           row's height to fit however many are assigned.
         </p>
@@ -211,7 +219,8 @@
         <ul class="manual-list">
           <li><strong>Countries</strong> and <strong>Currencies</strong> — standard reference lists.</li>
           <li><strong>UN/LOCODEs</strong> — ports and locations, each with coordinates, used for a system's own location and for its ports.</li>
-          <li><strong>Modules</strong> — the named modules a system can be built from (see <a routerLink="." fragment="systems">Systems</a>).</li>
+          <li><strong>Functions</strong> — the named functions a system can be built from (see <a routerLink="." fragment="systems">Systems</a>).</li>
+          <li><strong>Products</strong> — the Tidalis product list, each with a short code and a name.</li>
           <li><strong>Tags</strong> — coloured labels usable on both systems and contracts.</li>
           <li><strong>Document Types</strong> and <strong>URL Types</strong> — the categories offered when attaching a document or a link.</li>
         </ul>

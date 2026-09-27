@@ -57,3 +57,34 @@
   cursor: pointer;
   background: none;
 }
+
+.edit-form__checkboxes {
+  display: flex;
+  flex-direction: column;
+  margin: 0 0 12px;
+  padding: 4px 12px 8px;
+  border: 1px solid var(--tidalis-border);
+  border-radius: var(--tidalis-radius);
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.edit-form__checkboxes-label {
+  float: none;
+  width: auto;
+  margin: 0;
+  padding: 0 4px;
+  font-size: 0.75rem;
+  color: var(--tidalis-muted);
+}
+
+.edit-form__checkboxes-empty,
+.edit-form__checkboxes-hint {
+  font-size: 0.75rem;
+  color: var(--tidalis-muted);
+}
+
+.edit-form__checkboxes-empty {
+  font-style: italic;
+  padding: 6px 0;
+}

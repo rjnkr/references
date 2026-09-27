@@ -208,13 +208,14 @@ export function buildSystemColumnDefs(
     },
     {
       colId: 'products',
-      field: 'products',
       headerName: 'Products',
       width: 220,
       sortable: false,
+      valueGetter: (params) =>
+        (params.data?.products ?? []).map((assignment) => assignment.product.name).join(', '),
       filter: 'agTextColumnFilter',
       floatingFilter: true,
-      tooltipField: 'products',
+      tooltipValueGetter: (params) => params.value,
       cellClass: 'cell-clip',
     },
     {
@@ -254,7 +255,7 @@ export function buildSystemColumnDefs(
     countColumn('portsCount', '# Ports', (s) => nonSystemPorts(s).length, 95),
     {
       colId: 'modules',
-      headerName: 'Modules',
+      headerName: 'Functions',
       width: 220,
       sortable: false,
       autoHeight: true,

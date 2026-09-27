@@ -4,7 +4,7 @@ import { ContractType, Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { DbService } from '../database/db-service/db.service';
 import { CONTRACT_INCLUDE } from '../modules/contracts/contracts.service';
-import { SYSTEM_INCLUDE } from '../modules/systems/systems.service';
+import { SYSTEM_INCLUDE, productSearch } from '../modules/systems/systems.service';
 
 const DEFAULT_LIMIT = 25;
 const MAX_LIMIT = 100;
@@ -61,7 +61,7 @@ function parseContractType(value: string | undefined): ContractType | undefined 
  * `registerTool`'s generic signature.
  */
 const listSystemsInputSchema = {
-  search: z.string().optional().describe('Free text matched against system name and products'),
+  search: z.string().optional().describe('Free text matched against system name and product code/name'),
   contractType: z
     .string()
     .optional()
@@ -127,7 +127,7 @@ export class McpService {
       async ({ search, contractType, countryId, limit }) => {
         const where: Prisma.SystemWhereInput = { deleted: false };
         if (search) {
-          where.OR = [{ name: { contains: search } }, { products: { contains: search } }];
+          where.OR = [{ name: { contains: search } }, productSearch(search)];
         }
         const parsedContractType = parseContractType(contractType);
         if (parsedContractType) {
@@ -140,7 +140,7 @@ export class McpService {
         const [systems, total] = await Promise.all([
           this.db.system.findMany({
             where,
-            include: { country: true },
+            include: { country: true, products: { include: { product: true } } },
             orderBy: { name: 'asc' },
             take: limit ?? DEFAULT_LIMIT,
           }),
@@ -229,7 +229,7 @@ export class McpService {
                 ...baseWhere,
                 OR: words.flatMap((word) => [
                   { name: { contains: word } },
-                  { products: { contains: word } },
+                  productSearch(word),
                   { scope: { contains: word } },
                   { description: { contains: word } },
                   { country: { name: { contains: word } } },
@@ -239,7 +239,7 @@ export class McpService {
 
         const systems = await this.db.system.findMany({
           where,
-          include: { country: true },
+          include: { country: true, products: { include: { product: true } } },
           orderBy: { name: 'asc' },
           take: Math.min((limit ?? DEFAULT_LIMIT) * 2, MAX_LIMIT * 2),
         });
@@ -351,6 +351,12 @@ export class McpService {
     );
 
     registerMcpTool(server,
+      'list_products',
+      { description: 'List the Tidalis products with their product codes and names.', inputSchema: {} },
+      async () => asJson(await this.db.product.findMany({ orderBy: { code: 'asc' } })),
+    );
+
+    registerMcpTool(server,
       'list_countries',
       {
         description: 'List countries with their ids and ISO 3166-1 alpha-2 codes.',
@@ -397,7 +403,7 @@ export class McpService {
       id: system.id,
       name: system.name,
       contractType: system.contractType,
-      products: system.products,
+      products: system.products?.map((row: any) => row.product?.name),
       country: system.country?.name,
       countryCode: system.country?.isoCode,
       canBeUsedAsReference: system.canBeUsedAsReference,
@@ -527,7 +533,7 @@ export class McpService {
 
     const haystack = [
       system.name,
-      system.products,
+      ...(system.products ?? []).flatMap((row: any) => [row.product?.code, row.product?.name]),
       system.scope,
       system.description,
       system.country?.name,

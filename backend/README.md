@@ -135,11 +135,11 @@ POST   /api/systems/:id/restore   undo a soft delete
 
 `GET /api/systems` query parameters:
 
-`search` (matches name, products), `contractType`, `countryId`, `isSensitive`,
+`search` (matches name, product code/name), `contractType`, `countryId`, `isSensitive`,
 `canBeUsedAsReference`, `systemDecommissioned`, `sort`, `page`, `pageSize`.
 
 `sort` takes a field name, prefixed with `-` for descending, e.g. `sort=-createdAt`. Allowed
-fields: `id`, `name`, `contractType`, `products`, `countryId`, `isSensitive`,
+fields: `id`, `name`, `contractType`, `countryId`, `isSensitive`,
 `canBeUsedAsReference`, `showOnMap`, `systemDecommissioned`, `pocName`, `createdAt`,
 `updatedAt`. Anything else is a 400. Default sort is `name` ascending; default paging is
 `page=1&pageSize=25` (max 500).
@@ -166,7 +166,7 @@ accept either a compact or an object form, whichever is easier for the client:
   "name": "Port of Rotterdam VTS",
   "scope": "Replacement of the existing VTS ... (max 200 words)",
   "contractType": "VTS",
-  "products": "VTS Suite, Radar Processing",
+  "products": [1, 2],
   "countryId": 155,
   "systemUnlocodeId": 12,
 

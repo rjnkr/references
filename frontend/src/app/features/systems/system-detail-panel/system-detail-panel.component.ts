@@ -60,9 +60,9 @@ const SCOPE_SOFT_WORD_LIMIT = 200;
  */
 const TAB_CONTROLS: string[][] = [
   ['name', 'systemUnlocode', 'contractType', 'countryId', 'tags'],
-  ['scope', 'products', 'description', 'internalNotes'],
+  ['scope', 'description', 'internalNotes'],
   ['ports'],
-  ['modules', 'subSystems', 'externalInterfaces'],
+  ['products', 'modules', 'subSystems', 'externalInterfaces'],
   ['pocName', 'pocEmail', 'pocPhone', 'customerDetails', 'endUserDetails', 'people'],
   ['urls'],
   [],
@@ -160,11 +160,11 @@ export class SystemDetailPanelComponent {
     canBeUsedAsReference: [true],
     systemDecommissioned: [false],
     tags: [[] as number[]],
+    products: [[] as number[]],
     modules: [[] as number[], [minSelectionValidator(1)]],
 
     /* Scope & description */
     scope: ['', [Validators.required]],
-    products: ['', [Validators.required, Validators.maxLength(100)]],
     description: [''],
 
     /* People & contacts */
@@ -229,6 +229,37 @@ export class SystemDetailPanelComponent {
     return ids.map((id) => byId.get(id)).filter((tag): tag is Tag => !!tag);
   }
 
+  /* --- Products & the modules they offer ---------------------------------------- */
+
+  isProductSelected(productId: number): boolean {
+    return ((this.form.get('products')?.value ?? []) as number[]).includes(productId);
+  }
+
+  toggleProduct(productId: number, checked: boolean): void {
+    const control = this.form.get('products');
+    const current = (control?.value ?? []) as number[];
+    control?.setValue(checked ? [...current, productId] : current.filter((id) => id !== productId));
+    control?.markAsDirty();
+  }
+
+  /** The modules the picker offers: only those belonging to at least one ticked product. */
+  availableModules(): Module[] {
+    const selected = new Set((this.form.get('products')?.value ?? []) as number[]);
+    return this.lookups.modules().filter((module) => module.productIds.some((id) => selected.has(id)));
+  }
+
+  /** Deselecting a product only hides its modules from the picker; on save, any selected
+   *  module no longer offered by a ticked product is dropped here, before validation. */
+  private dropModulesOfDeselectedProducts(): void {
+    const control = this.form.get('modules');
+    const available = new Set(this.availableModules().map((module) => module.id));
+    const current = (control?.value ?? []) as number[];
+    const kept = current.filter((id) => available.has(id));
+    if (kept.length !== current.length) {
+      control?.setValue(kept);
+    }
+  }
+
   /** The currently selected modules, alphabetised — the mat-select trigger itself only
    *  shows a truncated comma list, so this backs a readable list display alongside it. */
   selectedModules(): Module[] {
@@ -283,9 +314,9 @@ export class SystemDetailPanelComponent {
         canBeUsedAsReference: true,
         systemDecommissioned: false,
         tags: [],
+        products: [],
         modules: [],
         scope: '',
-        products: '',
         description: '',
         pocName: '',
         pocEmail: '',
@@ -319,9 +350,9 @@ export class SystemDetailPanelComponent {
         canBeUsedAsReference: !!system.canBeUsedAsReference,
         systemDecommissioned: !!system.systemDecommissioned,
         tags: (system.tags ?? []).map((assignment) => assignment.tagId),
+        products: (system.products ?? []).map((assignment) => assignment.productId),
         modules: (system.modules ?? []).map((assignment) => assignment.moduleId),
         scope: system.scope ?? '',
-        products: system.products ?? '',
         description: system.description ?? '',
         pocName: system.pocName ?? '',
         pocEmail: system.pocEmail ?? '',
@@ -428,6 +459,7 @@ export class SystemDetailPanelComponent {
   /* --- Save / cancel --------------------------------------------------------------- */
 
   save(): void {
+    this.dropModulesOfDeselectedProducts();
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       const firstBadTab = TAB_CONTROLS.findIndex((names) =>
@@ -486,7 +518,6 @@ export class SystemDetailPanelComponent {
       name: text(value.name),
       scope: text(value.scope),
       contractType: value.contractType,
-      products: text(value.products),
       description: optional(value.description),
       customerDetails: optional(value.customerDetails),
       endUserDetails: optional(value.endUserDetails),
@@ -506,6 +537,7 @@ export class SystemDetailPanelComponent {
         .filter((unlocode: UnLocode | null): unlocode is UnLocode => !!unlocode?.id)
         .map((unlocode: UnLocode) => ({ unlocodeId: unlocode.id })),
 
+      products: (value.products ?? []) as number[],
       modules: (value.modules ?? []) as number[],
 
       subSystems: (value.subSystems ?? [])

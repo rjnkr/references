@@ -24,6 +24,7 @@ function setupSwagger(app: NestExpressApplication): void {
     .addTag('Countries')
     .addTag('UN/LOCODEs')
     .addTag('Document types')
+    .addTag('Products')
     .addTag('Map')
     .addTag('Authentication')
     .addTag('MCP')

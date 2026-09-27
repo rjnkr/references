@@ -23,9 +23,10 @@ import {
   COUNTRY_CONFIG,
   CURRENCY_CONFIG,
   DOCUMENT_TYPE_CONFIG,
-  MODULE_CONFIG,
+  PRODUCT_CONFIG,
   TAG_CONFIG,
   URL_TYPE_CONFIG,
+  moduleConfig,
   unlocodeConfig,
 } from '../reference-data.configs';
 import { ReferenceEntityConfig } from '../reference-data.model';
@@ -39,7 +40,7 @@ type Row = Record<string, unknown> & { id: number };
 
 const LOOKUP_CACHE_KEYS: Record<
   string,
-  'currencies' | 'countries' | 'documentTypes' | 'tags' | 'urlTypes' | 'modules'
+  'currencies' | 'countries' | 'documentTypes' | 'tags' | 'urlTypes' | 'modules' | 'products'
 > = {
   countries: 'countries',
   currencies: 'currencies',
@@ -47,6 +48,7 @@ const LOOKUP_CACHE_KEYS: Record<
   tags: 'tags',
   'url-types': 'urlTypes',
   modules: 'modules',
+  products: 'products',
 };
 
 /**
@@ -91,7 +93,12 @@ export class ReferenceTablePageComponent {
     this.lookups.getCountries().subscribe({ error: () => undefined });
 
     this.route.paramMap.subscribe((params) => {
-      const config = this.resolveConfig(params.get('type') ?? '');
+      const type = params.get('type') ?? '';
+      if (type === 'modules') {
+        // Fetched per visit (not just once) so products edited meanwhile show up in the picker.
+        this.lookups.getProducts().subscribe({ error: () => undefined });
+      }
+      const config = this.resolveConfig(type);
       this.config.set(config);
       this.client = config ? new ReferenceCrudClient<Row>(this.http, this.base, config.key) : null;
       this.rows.set([]);
@@ -125,7 +132,9 @@ export class ReferenceTablePageComponent {
       case 'tags':
         return TAG_CONFIG as unknown as ReferenceEntityConfig<Row>;
       case 'modules':
-        return MODULE_CONFIG as unknown as ReferenceEntityConfig<Row>;
+        return moduleConfig(this.lookups.products) as unknown as ReferenceEntityConfig<Row>;
+      case 'products':
+        return PRODUCT_CONFIG as unknown as ReferenceEntityConfig<Row>;
       case 'unlocodes':
         return unlocodeConfig(this.lookups.countries) as unknown as ReferenceEntityConfig<Row>;
       default:

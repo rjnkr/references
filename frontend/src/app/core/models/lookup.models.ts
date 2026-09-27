@@ -44,7 +44,16 @@ export interface Tag {
   textColor: string;
 }
 
+export interface Product {
+  id: number;
+  code: string;
+  name: string;
+}
+
 export interface Module {
   id: number;
   name: string;
+  /** Products this module references (zero or more). */
+  productIds: number[];
+  products: Product[];
 }

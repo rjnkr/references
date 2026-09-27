@@ -22,7 +22,6 @@ export const SORTABLE_SYSTEM_FIELDS = [
   'id',
   'name',
   'contractType',
-  'products',
   'countryId',
   'isSensitive',
   'canBeUsedAsReference',
@@ -33,7 +32,7 @@ export const SORTABLE_SYSTEM_FIELDS = [
 ] as const;
 
 export class QuerySystemsDto {
-  @ApiPropertyOptional({ description: 'Free text, matches name and products' })
+  @ApiPropertyOptional({ description: 'Free text, matches name and product code/name' })
   @IsOptional()
   @IsString()
   search?: string;

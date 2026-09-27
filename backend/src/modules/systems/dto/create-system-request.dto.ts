@@ -11,6 +11,7 @@ import {
   IsOptional,
   IsString,
   MaxLength,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { EmptyToUndefined } from '../../../core/validators/empty-to-undefined.transform';
@@ -48,11 +49,17 @@ export class CreateSystemRequestDto {
   @IsEnum(ContractType)
   contractType: ContractType;
 
-  @ApiProperty({ maxLength: 100, description: 'Free text list of products used' })
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(100)
-  products: string;
+  @ApiPropertyOptional({
+    description: 'Ids of the Tidalis products used (see /api/products), zero or more.',
+    type: Number,
+    isArray: true,
+    example: [1, 2],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  @Min(1, { each: true })
+  products?: number[];
 
   @ApiPropertyOptional({ description: 'Full free text description' })
   @IsOptional()

@@ -212,16 +212,6 @@
           </ng-template>
 
           <div class="tab-content row g-2">
-            <div class="col-12 col-md-6">
-              <mat-form-field appearance="outline">
-                <mat-label>Products</mat-label>
-                <input matInput formControlName="products" maxlength="100" />
-                @if (form.get('products')?.hasError('required')) {
-                  <mat-error>Products is required</mat-error>
-                }
-              </mat-form-field>
-            </div>
-
             <div class="col-12">
               <div class="share-hint">
                 <mat-icon>public</mat-icon>
@@ -340,12 +330,15 @@
           </div>
         </mat-tab>
 
-        <!-- ============================================= 4. Modules & Subsystems -->
+        <!-- ======================================================== 4. Products -->
         <mat-tab>
           <ng-template mat-tab-label>
-            <span>Modules &amp; Subsystems</span>
+            <span>Products</span>
             <span class="tab-count">{{
-              (form.get('modules')?.value?.length ?? 0) + subSystems.length + externalInterfaces.length
+              (form.get('products')?.value?.length ?? 0) +
+                (form.get('modules')?.value?.length ?? 0) +
+                subSystems.length +
+                externalInterfaces.length
             }}</span>
             @if (tabHasError(3)) {
               <span class="tab-dot"></span>
@@ -353,24 +346,42 @@
           </ng-template>
 
           <div class="tab-content">
+            <div class="tidalis-section-title">Products</div>
+            <div class="product-checkboxes">
+              @for (product of lookups.products(); track product.id) {
+                <mat-checkbox
+                  [checked]="isProductSelected(product.id)"
+                  [disabled]="isReadonly()"
+                  (change)="toggleProduct(product.id, $event.checked)"
+                  >{{ product.code }} — {{ product.name }}</mat-checkbox
+                >
+              } @empty {
+                <div class="tidalis-empty">No products defined yet (see Reference Data).</div>
+              }
+            </div>
+
+            <mat-divider class="section-divider"></mat-divider>
+
             <div class="row g-4">
               <div class="col-12 col-lg-6">
-                <div class="tidalis-section-title">Modules</div>
+                <div class="tidalis-section-title">Functions</div>
                 @if (showModulesPicker()) {
                   <mat-form-field appearance="outline">
-                    <mat-label>Modules</mat-label>
+                    <mat-label>Functions</mat-label>
                     <mat-select
                       #modulesSelect
                       formControlName="modules"
                       multiple
                       (closed)="onModulesSelectClosed()"
                     >
-                      @for (module of lookups.modules(); track module.id) {
+                      @for (module of availableModules(); track module.id) {
                         <mat-option [value]="module.id">{{ module.name }}</mat-option>
+                      } @empty {
+                        <mat-option disabled>Tick a product to see its functions</mat-option>
                       }
                     </mat-select>
                     @if (form.get('modules')?.hasError('minSelection')) {
-                      <mat-error>At least one module is required</mat-error>
+                      <mat-error>At least one function is required</mat-error>
                     }
                   </mat-form-field>
                 } @else if (selectedModules().length > 0) {
@@ -386,14 +397,14 @@
                         type="button"
                         class="module-list-display__edit"
                         (click)="startEditingModules()"
-                        aria-label="Edit modules"
+                        aria-label="Edit functions"
                       >
                         <mat-icon>edit</mat-icon>
                       </button>
                     }
                   </div>
                 } @else {
-                  <div class="tidalis-empty">No modules selected.</div>
+                  <div class="tidalis-empty">No functions selected.</div>
                 }
               </div>
 

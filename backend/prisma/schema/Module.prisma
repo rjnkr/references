@@ -7,7 +7,8 @@ model Module {
   /// @maxLength 150
   name String @unique @db.VarChar(150)
 
-  systems SystemModule[]
+  systems  SystemModule[]
+  products ModuleProduct[]
 
   @@map("modules")
 }

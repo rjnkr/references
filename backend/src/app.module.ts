@@ -12,6 +12,7 @@ import { CurrenciesModule } from './modules/currencies/currencies.module';
 import { DocumentTypesModule } from './modules/document-types/document-types.module';
 import { MapModule } from './modules/map/map.module';
 import { ModulesModule } from './modules/modules/modules.module';
+import { ProductsModule } from './modules/products/products.module';
 import { ContractsModule } from './modules/contracts/contracts.module';
 import { SystemAuditLogsModule } from './modules/system-audit-logs/system-audit-logs.module';
 import { SystemsModule } from './modules/systems/systems.module';
@@ -35,6 +36,7 @@ import { UrlTypesModule } from './modules/url-types/url-types.module';
     UrlTypesModule,
     TagsModule,
     ModulesModule,
+    ProductsModule,
     ContractsModule,
     SystemsModule,
     MapModule,

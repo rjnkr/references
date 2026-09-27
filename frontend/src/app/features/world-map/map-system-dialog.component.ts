@@ -83,7 +83,7 @@ export class MapSystemDialogComponent {
   protected confirmDelete(system: System): void {
     const data: ConfirmDialogData = {
       title: 'Delete system?',
-      message: `“${system.name}” and all of its ports, documents, people and modules will be permanently removed.`,
+      message: `“${system.name}” and all of its ports, documents, people and functions will be permanently removed.`,
       confirmLabel: 'Delete',
       destructive: true,
     };
