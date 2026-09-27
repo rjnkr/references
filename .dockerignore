@@ -1,0 +1,15 @@
+**/node_modules
+**/dist
+**/.angular
+**/coverage
+**/*.log
+**/.env
+**/.env.local
+**/.DS_Store
+.git
+.github
+.idea
+.claude
+backend/storage
+backend/.backups
+backend/src/generated

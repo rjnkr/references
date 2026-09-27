@@ -1,3 +1,12 @@
+# Full stack: MariaDB + NestJS backend + Angular frontend (nginx).
+#
+#   docker compose up -d --build     # build locally and start everything
+#   docker compose up -d mariadb     # database only, for local dev (npm run db:up)
+#
+# Open http://localhost:${FRONTEND_PORT:-8080}. nginx serves the SPA and proxies
+# /api, /mcp and /docs to the backend, so the backend port is not published.
+# Override any ${VAR} below via a .env file next to this file.
+
 services:
   mariadb:
     image: mariadb:11
@@ -18,5 +27,52 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    image: ${DOCKERHUB_NAMESPACE:-rjnkr2026}/references-backend:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: tidalis-references-backend
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      DATABASE_URL: mysql://${DB_USER:-tidalis}:${DB_PASSWORD:-changeme}@mariadb:3306/${DB_NAME:-tidalis_references}
+      PORT: 3000
+      FRONTEND_ORIGIN: ${PUBLIC_URL:-http://localhost:8080}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-25}
+      JWT_SECRET: ${JWT_SECRET:-change_me_dev_secret}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      MCP_API_KEY: ${MCP_API_KEY:-change_me_mcp_key}
+      SAML_SP_ENTITY_ID: ${SAML_SP_ENTITY_ID:-urn:tidalis:project-references}
+      SAML_ISSUER: ${SAML_ISSUER:-urn:tidalis:project-references}
+      SAML_IDP_ENTITY_ID: ${SAML_IDP_ENTITY_ID:-}
+      SAML_IDP_SSO_URL: ${SAML_IDP_SSO_URL:-}
+      SAML_IDP_CERT: ${SAML_IDP_CERT:-}
+      SAML_CALLBACK_URL: ${PUBLIC_URL:-http://localhost:8080}/api/auth/saml/callback
+      SAML_NAME_ATTRIBUTE: ${SAML_NAME_ATTRIBUTE:-}
+      AUTH_DISABLED: ${AUTH_DISABLED:-false}
+      DEV_USER_EMAIL: ${DEV_USER_EMAIL:-dev@tidalis.com}
+      LOG_SQL: ${LOG_SQL:-false}
+    volumes:
+      - documents:/app/backend/storage/documents
+
+  frontend:
+    image: ${DOCKERHUB_NAMESPACE:-rjnkr2026}/references-frontend:${TAG:-latest}
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: tidalis-references-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      BACKEND_URL: http://backend:3000
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+
 volumes:
   mariadb-data:
+  documents:
